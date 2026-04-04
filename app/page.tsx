@@ -5,6 +5,7 @@ import { LockKeyhole, MonitorPlay, Play, Shield, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Footer } from "@/components/Footer";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WatchPartyLogo } from "@/components/WatchPartyLogo";
 import { Button } from "@/components/ui/button";
@@ -183,40 +184,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-auto w-full border-t border-[var(--border)] py-6">
-        <div className="flex flex-col items-center gap-3 text-sm text-[var(--text-muted)]">
-          <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/Zer0Wav3s"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cursor-pointer transition-colors hover:text-[var(--text-primary)]"
-            >
-              GitHub
-            </a>
-            <span className="text-[var(--border)]">·</span>
-            <a
-              href="https://zerowaves.space"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cursor-pointer transition-colors hover:text-[var(--text-primary)]"
-            >
-              zerowaves.space
-            </a>
-            <span className="text-[var(--border)]">·</span>
-            <a
-              href="https://x.com/Zer0Wav3s"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cursor-pointer transition-colors hover:text-[var(--text-primary)]"
-            >
-              𝕏
-            </a>
-          </div>
-          <p className="text-xs text-[var(--text-muted)]">Built by ZeroWaves</p>
-        </div>
-      </footer>
+      <Footer />
     </motion.main>
   );
 }

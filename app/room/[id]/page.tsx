@@ -5,6 +5,7 @@ import { Crown, LogOut, Loader2, PartyPopper } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
+import { Footer } from "@/components/Footer";
 import { MediaControls } from "@/components/MediaControls";
 import { ShareRoomLink } from "@/components/ShareRoomLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -492,6 +493,7 @@ export default function RoomPage({ params }: RoomPageProps) {
           ) : null}
         </div>
       </div>
+      <Footer />
     </motion.main>
   );
 }
