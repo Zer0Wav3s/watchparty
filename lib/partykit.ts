@@ -11,7 +11,7 @@ export function getPartyKitWebSocketUrl(
   const host = getPartyKitHost();
   const isLocal = host.startsWith("localhost") || host.startsWith("127.0.0.1");
   const protocol = isLocal ? "ws" : "wss";
-  const url = new URL(`${protocol}://${host}/parties/room/${roomId}`);
+  const url = new URL(`${protocol}://${host}/party/${roomId}`);
 
   if (options?.hostToken) {
     url.searchParams.set("hostToken", options.hostToken);
