@@ -13,6 +13,7 @@ import { safeJsonParse } from "../lib/utils";
 const STORAGE_KEY = "room-state";
 const ROOM_ENDED_KEY = "room-ended-at";
 const INACTIVE_ROOM_TTL_MS = 60 * 60 * 1000;
+const MAX_VIEWERS = 5;
 const hostTokenId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 16);
 
 type ConnectionMeta = {
@@ -74,6 +75,12 @@ export default class RoomServer implements Server {
     conn.setState({ authed: autoAuthed });
 
     if (autoAuthed) {
+      // Check viewer cap
+      if (this.state.viewers.size >= MAX_VIEWERS && !this.state.viewers.has(conn.id)) {
+        conn.send(JSON.stringify({ type: "error", error: "Room is full (max 5 viewers)" } satisfies ServerMessage));
+        conn.close(4429, "Room full");
+        return;
+      }
       await this.room.storage.deleteAlarm();
       this.markViewer(conn.id, true);
       const isHost = this.ensureHost(conn.id);
