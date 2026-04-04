@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint app components lib party next.config.ts --max-warnings 0"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

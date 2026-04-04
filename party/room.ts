@@ -1,4 +1,4 @@
-import type * as Party from "partykit/server";
+import type { Connection, ConnectionContext, Request, Room, Server, Worker } from "partykit/server";
 import { customAlphabet } from "nanoid";
 
 import type {
@@ -17,8 +17,8 @@ type ConnectionMeta = {
   authed: boolean;
 };
 
-export default class RoomServer implements Party.Server {
-  constructor(readonly room: Party.Room) {}
+export default class RoomServer implements Server {
+  constructor(readonly room: Room) {}
 
   readonly options = {
     hibernate: true,
@@ -32,7 +32,7 @@ export default class RoomServer implements Party.Server {
     this.state = stored ? this.deserializeState(stored) : this.createDefaultState();
   }
 
-  async onConnect(conn: Party.Connection<ConnectionMeta>, ctx: Party.ConnectionContext) {
+  async onConnect(conn: Connection<ConnectionMeta>, ctx: ConnectionContext) {
     await this.ensureStateLoaded();
 
     if (!this.state.roomId) {
@@ -62,7 +62,7 @@ export default class RoomServer implements Party.Server {
     conn.send(JSON.stringify({ type: "pin-required" } satisfies ServerMessage));
   }
 
-  async onMessage(raw: string | ArrayBuffer | ArrayBufferView, conn: Party.Connection<ConnectionMeta>) {
+  async onMessage(raw: string | ArrayBuffer | ArrayBufferView, conn: Connection<ConnectionMeta>) {
     await this.ensureStateLoaded();
 
     const message = this.parseMessage(raw);
@@ -121,10 +121,6 @@ export default class RoomServer implements Party.Server {
           this.state.isPlaying = false;
         }
 
-        if (message.type === "seek") {
-          this.state.isPlaying = this.state.isPlaying;
-        }
-
         await this.persistState();
 
         this.room.broadcast(JSON.stringify(message satisfies ServerMessage), [conn.id]);
@@ -137,7 +133,7 @@ export default class RoomServer implements Party.Server {
     }
   }
 
-  async onClose(conn: Party.Connection<ConnectionMeta>) {
+  async onClose(conn: Connection<ConnectionMeta>) {
     await this.ensureStateLoaded();
 
     if (this.state.viewers.has(conn.id)) {
@@ -153,30 +149,32 @@ export default class RoomServer implements Party.Server {
     }
   }
 
-  async onRequest(req: Party.Request) {
+  async onRequest(req: Request) {
     await this.ensureStateLoaded();
 
     if (req.method === "POST") {
-      const body = (await (req as unknown as globalThis.Request).json().catch(() => null)) as { pin?: string | null } | null;
+      if (!this.state.roomId) {
+        const body = (await req.json().catch(() => null)) as { pin?: string | null } | null;
 
-      this.state = {
-        roomId: this.room.id,
-        pin: body?.pin?.trim() || null,
-        hostToken: body?.pin ? hostTokenId() : null,
-        hostConnectionId: null,
-        videoUrl: null,
-        videoType: null,
-        isPlaying: false,
-        position: 0,
-        lastUpdateAt: Date.now(),
-        viewers: new Map<string, ViewerState>(),
-      };
+        this.state = {
+          roomId: this.room.id,
+          pin: body?.pin?.trim() || null,
+          hostToken: body?.pin ? hostTokenId() : null,
+          hostConnectionId: null,
+          videoUrl: null,
+          videoType: null,
+          isPlaying: false,
+          position: 0,
+          lastUpdateAt: Date.now(),
+          viewers: new Map<string, ViewerState>(),
+        };
 
-      await this.persistState();
+        await this.persistState();
+      }
 
       return Response.json({
         ok: true,
-        roomId: this.room.id,
+        roomId: this.state.roomId,
         hostToken: this.state.hostToken,
       });
     }
@@ -275,7 +273,7 @@ export default class RoomServer implements Party.Server {
     );
   }
 
-  private sendSync(conn: Party.Connection<ConnectionMeta>, isHost: boolean) {
+  private sendSync(conn: Connection<ConnectionMeta>, isHost: boolean) {
     conn.send(
       JSON.stringify({
         type: "sync",
@@ -291,7 +289,7 @@ export default class RoomServer implements Party.Server {
     );
   }
 
-  private sendAuthOk(conn: Party.Connection<ConnectionMeta>, isHost: boolean) {
+  private sendAuthOk(conn: Connection<ConnectionMeta>, isHost: boolean) {
     conn.setState({ authed: true });
     conn.send(JSON.stringify({ type: "auth-ok", isHost, connectionId: conn.id } satisfies ServerMessage));
   }
@@ -308,7 +306,7 @@ export default class RoomServer implements Party.Server {
     return safeJsonParse<ClientMessage>(new TextDecoder().decode(raw.buffer));
   }
 
-  private async handlePinAuth(conn: Party.Connection<ConnectionMeta>, pin: string, hostToken: string | null) {
+  private async handlePinAuth(conn: Connection<ConnectionMeta>, pin: string, hostToken: string | null) {
     const failure = this.pinFailures.get(conn.id);
     const now = Date.now();
 
@@ -323,7 +321,7 @@ export default class RoomServer implements Party.Server {
     }
 
     const isValidPin = this.state.pin === pin.trim();
-    const isHost = !this.state.hostConnectionId || hostToken === this.state.hostToken;
+    const canAutoAuthAsCreator = Boolean(hostToken && hostToken === this.state.hostToken);
 
     if (!isValidPin) {
       const next = {
@@ -349,13 +347,13 @@ export default class RoomServer implements Party.Server {
     this.pinFailures.delete(conn.id);
     this.markViewer(conn.id, true);
 
-    if (isHost && !this.state.hostConnectionId) {
-      this.state.hostConnectionId = conn.id;
+    if (canAutoAuthAsCreator) {
+      conn.setState({ authed: true });
     }
 
-    await this.persistState();
+    const resolvedHost = this.ensureHost(conn.id);
 
-    const resolvedHost = this.state.hostConnectionId === conn.id;
+    await this.persistState();
     this.sendAuthOk(conn, resolvedHost);
     this.sendSync(conn, resolvedHost);
     this.broadcastViewerCount();
@@ -363,4 +361,4 @@ export default class RoomServer implements Party.Server {
   }
 }
 
-RoomServer satisfies Party.Worker;
+RoomServer satisfies Worker;

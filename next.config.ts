@@ -1,10 +1,9 @@
-import path from "node:path";
-
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {
-    root: path.join(__dirname),
+    // Keep Turbopack scoped to this app so workspace-level lockfiles do not trigger warnings.
+    root: __dirname,
   },
 };
 

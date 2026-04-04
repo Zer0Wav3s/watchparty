@@ -25,7 +25,8 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   const socketRef = useRef<WebSocket | null>(null);
   const positionRef = useRef(0);
-  const ignoreNextRef = useRef(false);
+  const ignoreNextPlayRef = useRef(false);
+  const ignoreNextPauseRef = useRef(false);
   const connectionIdRef = useRef<string | null>(null);
 
   const [hostToken, setHostToken] = useState<string | null>(null);
@@ -92,26 +93,24 @@ export default function RoomPage({ params }: RoomPageProps) {
         return;
 
       case "play":
-        ignoreNextRef.current = true;
+        ignoreNextPlayRef.current = true;
         setIsPlaying(true);
         setSeekTo(message.position);
         return;
 
       case "pause":
-        ignoreNextRef.current = true;
+        ignoreNextPauseRef.current = true;
         setIsPlaying(false);
         setSeekTo(message.position);
         return;
 
       case "seek":
-        ignoreNextRef.current = true;
         setSeekTo(message.position);
         return;
 
       case "heartbeat": {
         const drift = Math.abs(positionRef.current - message.position);
         if (drift > DRIFT_THRESHOLD_SECS) {
-          ignoreNextRef.current = true;
           setSeekTo(message.position);
         }
         return;
@@ -197,28 +196,26 @@ export default function RoomPage({ params }: RoomPageProps) {
   }
 
   function handlePlay(position: number) {
-    if (ignoreNextRef.current) {
-      ignoreNextRef.current = false;
+    if (ignoreNextPlayRef.current) {
+      ignoreNextPlayRef.current = false;
       return;
     }
+
     setIsPlaying(true);
     sendPartyMessage(socketRef.current, { type: "play", position });
   }
 
   function handlePause(position: number) {
-    if (ignoreNextRef.current) {
-      ignoreNextRef.current = false;
+    if (ignoreNextPauseRef.current) {
+      ignoreNextPauseRef.current = false;
       return;
     }
+
     setIsPlaying(false);
     sendPartyMessage(socketRef.current, { type: "pause", position });
   }
 
   function handleSeek(position: number) {
-    if (ignoreNextRef.current) {
-      ignoreNextRef.current = false;
-      return;
-    }
     sendPartyMessage(socketRef.current, { type: "seek", position });
   }
 
@@ -266,6 +263,7 @@ export default function RoomPage({ params }: RoomPageProps) {
                 type={videoType}
                 isPlaying={isPlaying}
                 seekTo={seekTo}
+                seekThreshold={DRIFT_THRESHOLD_SECS}
                 onPlay={handlePlay}
                 onPause={handlePause}
                 onSeek={handleSeek}

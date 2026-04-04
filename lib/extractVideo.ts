@@ -89,64 +89,81 @@ function extractIframeSrcs(html: string): string[] {
 }
 
 export async function extractVideo(url: string): Promise<ExtractResult | ExtractError> {
-  // Direct link check
-  const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes(".m3u8")) {
-    return { src: url, type: "hls" };
-  }
-  if (lowerUrl.includes(".mp4")) {
-    return { src: url, type: "mp4" };
-  }
-
-  // Fetch page
-  let html: string;
   try {
-    const response = await fetch(url, {
-      headers: { "User-Agent": BROWSER_UA },
-      redirect: "follow",
-      signal: AbortSignal.timeout(12_000),
-    });
-    html = await response.text();
-  } catch {
-    return { error: "Failed to fetch the page. The site may be blocking requests." };
-  }
+    const lowerUrl = url.toLowerCase();
+    if (lowerUrl.includes(".m3u8")) {
+      return { src: url, type: "hls" };
+    }
+    if (lowerUrl.includes(".mp4")) {
+      return { src: url, type: "mp4" };
+    }
 
-  // Extract candidates from main page
-  let candidates = extractFromHtml(html);
+    let html: string;
+    try {
+      const response = await fetch(url, {
+        headers: { "User-Agent": BROWSER_UA },
+        redirect: "follow",
+        signal: AbortSignal.timeout(12_000),
+      });
 
-  // If no candidates, try iframe sources (depth 1)
-  if (candidates.length === 0) {
-    const iframeSrcs = extractIframeSrcs(html);
+      if (!response.ok) {
+        return {
+          error: `Failed to fetch the page (${response.status}). The site may be blocking requests.`,
+          candidates: [],
+        };
+      }
 
-    for (const iframeSrc of iframeSrcs.slice(0, 3)) {
-      try {
-        const iframeResponse = await fetch(iframeSrc, {
-          headers: { "User-Agent": BROWSER_UA },
-          redirect: "follow",
-          signal: AbortSignal.timeout(8_000),
-        });
-        const iframeHtml = await iframeResponse.text();
-        candidates.push(...extractFromHtml(iframeHtml));
-      } catch {
-        // iframe fetch failed, skip
+      html = await response.text();
+    } catch {
+      return {
+        error: "Failed to fetch the page. The site may be blocking requests.",
+        candidates: [],
+      };
+    }
+
+    let candidates = extractFromHtml(html);
+
+    if (candidates.length === 0) {
+      const iframeSrcs = extractIframeSrcs(html);
+
+      for (const iframeSrc of iframeSrcs.slice(0, 3)) {
+        try {
+          const iframeResponse = await fetch(iframeSrc, {
+            headers: { "User-Agent": BROWSER_UA },
+            redirect: "follow",
+            signal: AbortSignal.timeout(8_000),
+          });
+
+          if (!iframeResponse.ok) {
+            continue;
+          }
+
+          const iframeHtml = await iframeResponse.text();
+          candidates.push(...extractFromHtml(iframeHtml));
+        } catch {
+          // Skip iframe failures and keep trying the remaining candidates.
+        }
+      }
+
+      candidates = dedup(candidates);
+    }
+
+    if (candidates.length === 0) {
+      return { error: "Could not extract video source", candidates: [] };
+    }
+
+    for (const candidate of candidates) {
+      const valid = await validateCandidate(candidate);
+      if (valid) {
+        return { src: candidate, type: inferType(candidate) };
       }
     }
 
-    candidates = dedup(candidates);
+    return { error: "Could not extract video source", candidates };
+  } catch {
+    return {
+      error: "Unexpected extraction failure while parsing the source page.",
+      candidates: [],
+    };
   }
-
-  if (candidates.length === 0) {
-    return { error: "Could not extract video source", candidates: [] };
-  }
-
-  // Validate candidates in order
-  for (const candidate of candidates) {
-    const valid = await validateCandidate(candidate);
-    if (valid) {
-      return { src: candidate, type: inferType(candidate) };
-    }
-  }
-
-  // Return candidates even if validation fails — user can inspect
-  return { error: "Could not extract video source", candidates };
 }
