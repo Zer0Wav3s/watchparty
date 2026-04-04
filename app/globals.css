@@ -17,11 +17,11 @@
 }
 
 html {
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
-html[data-theme='dark'] body {
-  background: var(--background);
+html.dark {
+  color-scheme: dark;
 }
 
 body {
@@ -31,16 +31,21 @@ body {
   transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-html[data-theme='dark'] .party-blob {
-  opacity: 0.2;
+html.dark body {
+  background: linear-gradient(135deg, #020617 0%, #111827 48%, #0f172a 100%);
 }
 
 .party-blob {
   pointer-events: none;
   position: absolute;
   border-radius: 9999px;
-  filter: blur(48px);
-  opacity: 0.55;
+  filter: blur(56px);
+  opacity: 0.52;
+  animation: partyFloat 14s ease-in-out infinite;
+}
+
+html.dark .party-blob {
+  opacity: 0.22;
 }
 
 .party-blob-one {
@@ -49,6 +54,7 @@ html[data-theme='dark'] .party-blob {
   height: 20rem;
   width: 20rem;
   background: rgba(236, 72, 153, 0.35);
+  animation-delay: 0s;
 }
 
 .party-blob-two {
@@ -57,6 +63,7 @@ html[data-theme='dark'] .party-blob {
   height: 24rem;
   width: 24rem;
   background: rgba(139, 92, 246, 0.32);
+  animation-delay: -4s;
 }
 
 .party-blob-three {
@@ -65,4 +72,15 @@ html[data-theme='dark'] .party-blob {
   height: 22rem;
   width: 22rem;
   background: rgba(20, 184, 166, 0.28);
+  animation-delay: -8s;
+}
+
+@keyframes partyFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.04);
+  }
 }

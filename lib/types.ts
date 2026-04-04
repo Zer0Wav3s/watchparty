@@ -37,7 +37,8 @@ export type ClientMessage =
   | { type: "play"; position: number }
   | { type: "pause"; position: number }
   | { type: "seek"; position: number }
-  | { type: "heartbeat"; position: number };
+  | { type: "heartbeat"; position: number }
+  | { type: "end-room" };
 
 export type ServerMessage =
   | { type: "pin-required" }
@@ -67,6 +68,7 @@ export type ServerMessage =
   | { type: "pause"; position: number }
   | { type: "seek"; position: number }
   | { type: "heartbeat"; position: number }
+  | { type: "room-ended" }
   | { type: "room-not-found" }
   | { type: "error"; error: string; candidates?: string[] };
 
