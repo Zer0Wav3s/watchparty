@@ -54,14 +54,14 @@ export const VideoPlayer = forwardRef<HTMLVideoElement, VideoPlayerProps>(
 
     if (!url || !type) {
       return (
-        <div className="flex h-full min-h-[320px] w-full items-center justify-center bg-[var(--surface)] text-center sm:min-h-[400px]">
-          <div className="flex flex-col items-center gap-4 px-8 py-12">
-            <CirclePlay className="h-16 w-16 text-[var(--text-muted)]" />
-            <div className="space-y-2">
-              <p className="text-lg text-[var(--text-secondary)]">
-                Paste a link below to start watching
+        <div className="flex h-full w-full items-center justify-center bg-[var(--surface)] p-4 text-center">
+          <div className="flex flex-col items-center gap-3 sm:gap-4">
+            <CirclePlay className="h-10 w-10 text-[var(--text-muted)] sm:h-16 sm:w-16" />
+            <div className="space-y-1 sm:space-y-2">
+              <p className="text-sm text-[var(--text-secondary)] sm:text-lg">
+                Paste a link above to start watching
               </p>
-              <p className="text-sm text-[var(--text-muted)]">
+              <p className="text-xs text-[var(--text-muted)] sm:text-sm">
                 YouTube, HLS streams, and direct video links supported
               </p>
             </div>
