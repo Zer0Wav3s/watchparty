@@ -11,6 +11,8 @@ import type {
 import { safeJsonParse } from "../lib/utils";
 
 const STORAGE_KEY = "room-state";
+const ROOM_ENDED_KEY = "room-ended-at";
+const INACTIVE_ROOM_TTL_MS = 60 * 60 * 1000;
 const hostTokenId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 16);
 
 type ConnectionMeta = {
@@ -35,11 +37,17 @@ export default class RoomServer implements Server {
   async onConnect(conn: Connection<ConnectionMeta>, ctx: ConnectionContext) {
     await this.ensureStateLoaded();
 
+    const roomEndedAt = await this.room.storage.get<number>(ROOM_ENDED_KEY);
+    if (roomEndedAt) {
+      conn.send(JSON.stringify({ type: "room-ended" } satisfies ServerMessage));
+      conn.close(4404, "Room ended");
+      return;
+    }
+
     const requestUrl = new URL(ctx.request.url);
     const hostToken = requestUrl.searchParams.get("hostToken");
     const initPin = requestUrl.searchParams.get("initPin");
 
-    // Lazy room initialization: create room state on first WebSocket connect
     if (!this.state.roomId) {
       this.state = {
         roomId: this.room.id,
@@ -53,14 +61,17 @@ export default class RoomServer implements Server {
         lastUpdateAt: Date.now(),
         viewers: new Map<string, ViewerState>(),
       };
+      await this.room.storage.delete(ROOM_ENDED_KEY);
       await this.persistState();
     }
+
     const requiresPin = Boolean(this.state.pin);
     const autoAuthed = !requiresPin || (!!hostToken && hostToken === this.state.hostToken);
 
     conn.setState({ authed: autoAuthed });
 
     if (autoAuthed) {
+      await this.room.storage.deleteAlarm();
       this.markViewer(conn.id, true);
       const isHost = this.ensureHost(conn.id);
       await this.persistState();
@@ -118,6 +129,17 @@ export default class RoomServer implements Server {
         );
         return;
       }
+
+      case "end-room": {
+        if (this.state.hostConnectionId !== conn.id) {
+          conn.send(JSON.stringify({ type: "error", error: "Only the host can end the room" } satisfies ServerMessage));
+          return;
+        }
+
+        await this.endRoom();
+        return;
+      }
+
       case "play":
       case "pause":
       case "seek":
@@ -134,10 +156,10 @@ export default class RoomServer implements Server {
         }
 
         await this.persistState();
-
         this.room.broadcast(JSON.stringify(message satisfies ServerMessage), [conn.id]);
         return;
       }
+
       default: {
         const exhaustive: never = message;
         return exhaustive;
@@ -148,17 +170,37 @@ export default class RoomServer implements Server {
   async onClose(conn: Connection<ConnectionMeta>) {
     await this.ensureStateLoaded();
 
-    if (this.state.viewers.has(conn.id)) {
-      this.state.viewers.delete(conn.id);
-
-      if (this.state.hostConnectionId === conn.id) {
-        this.state.hostConnectionId = this.findNextHostId();
-      }
-
-      await this.persistState();
-      this.broadcastViewerCount();
-      this.broadcastHostChanged();
+    if (!this.state.viewers.has(conn.id)) {
+      return;
     }
+
+    this.state.viewers.delete(conn.id);
+
+    if (this.state.hostConnectionId === conn.id) {
+      this.state.hostConnectionId = this.findNextHostId();
+    }
+
+    await this.persistState();
+
+    if (this.state.viewers.size === 0) {
+      await this.room.storage.setAlarm(Date.now() + INACTIVE_ROOM_TTL_MS);
+    } else {
+      await this.room.storage.deleteAlarm();
+    }
+
+    this.broadcastViewerCount();
+    this.broadcastHostChanged();
+  }
+
+  async onAlarm() {
+    await this.ensureStateLoaded();
+
+    if (this.state.viewers.size > 0) {
+      await this.room.storage.deleteAlarm();
+      return;
+    }
+
+    await this.clearRoomState({ markEnded: false });
   }
 
   async onRequest(req: Request) {
@@ -181,6 +223,7 @@ export default class RoomServer implements Server {
           viewers: new Map<string, ViewerState>(),
         };
 
+        await this.room.storage.delete(ROOM_ENDED_KEY);
         await this.persistState();
       }
 
@@ -247,6 +290,28 @@ export default class RoomServer implements Server {
 
   private async persistState() {
     await this.room.storage.put(STORAGE_KEY, this.serializeState(this.state));
+  }
+
+  private async clearRoomState(options: { markEnded: boolean }) {
+    this.state = this.createDefaultState();
+    await this.room.storage.deleteAlarm();
+    await this.room.storage.delete(STORAGE_KEY);
+
+    if (options.markEnded) {
+      await this.room.storage.put(ROOM_ENDED_KEY, Date.now());
+      return;
+    }
+
+    await this.room.storage.delete(ROOM_ENDED_KEY);
+  }
+
+  private async endRoom() {
+    this.room.broadcast(JSON.stringify({ type: "room-ended" } satisfies ServerMessage));
+    await this.clearRoomState({ markEnded: true });
+
+    for (const connection of this.room.getConnections<ConnectionMeta>()) {
+      connection.close(4401, "Room ended by host");
+    }
   }
 
   private markViewer(connectionId: string, authed: boolean) {
@@ -356,6 +421,7 @@ export default class RoomServer implements Server {
       return;
     }
 
+    await this.room.storage.deleteAlarm();
     this.pinFailures.delete(conn.id);
     this.markViewer(conn.id, true);
 
