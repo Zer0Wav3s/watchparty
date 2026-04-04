@@ -286,13 +286,14 @@ export default class RoomServer implements Party.Server {
         isPlaying: this.state.isPlaying,
         viewers: this.state.viewers.size,
         isHost,
+        connectionId: conn.id,
       } satisfies ServerMessage),
     );
   }
 
   private sendAuthOk(conn: Party.Connection<ConnectionMeta>, isHost: boolean) {
     conn.setState({ authed: true });
-    conn.send(JSON.stringify({ type: "auth-ok", isHost } satisfies ServerMessage));
+    conn.send(JSON.stringify({ type: "auth-ok", isHost, connectionId: conn.id } satisfies ServerMessage));
   }
 
   private parseMessage(raw: string | ArrayBuffer | ArrayBufferView) {

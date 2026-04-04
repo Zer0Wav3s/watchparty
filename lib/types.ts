@@ -41,7 +41,7 @@ export type ClientMessage =
 
 export type ServerMessage =
   | { type: "pin-required" }
-  | { type: "auth-ok"; isHost: boolean }
+  | { type: "auth-ok"; isHost: boolean; connectionId: string }
   | { type: "auth-fail"; error: string }
   | {
       type: "sync";
@@ -52,6 +52,7 @@ export type ServerMessage =
       isPlaying: boolean;
       viewers: number;
       isHost: boolean;
+      connectionId: string;
     }
   | { type: "viewer-count"; count: number }
   | { type: "host-changed"; connectionId: string | null }
