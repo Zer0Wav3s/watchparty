@@ -17,8 +17,6 @@
   --success: #10B981;
   --danger: #EF4444;
   --danger-hover: #DC2626;
-  --button-gradient: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-  --button-gradient-hover: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%);
 }
 
 .dark {
@@ -38,8 +36,6 @@
   --success: #34D399;
   --danger: #F87171;
   --danger-hover: #EF4444;
-  --button-gradient: linear-gradient(135deg, #A78BFA 0%, #F472B6 100%);
-  --button-gradient-hover: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
 }
 
 @theme inline {
@@ -80,6 +76,16 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+button:not(:disabled),
+[role="button"]:not(:disabled),
+a,
+label[for],
+input[type="checkbox"],
+input[type="radio"],
+select:not(:disabled) {
+  cursor: pointer;
 }
 
 ::selection {
