@@ -16,7 +16,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="h-10 w-10 rounded-full hover:bg-[var(--surface-hover)]"
+      className="h-10 w-10 rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       <AnimatePresence mode="wait" initial={false}>
