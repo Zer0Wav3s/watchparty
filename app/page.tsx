@@ -53,7 +53,7 @@ export default function HomePage() {
     <main className="flex min-h-[100dvh] items-center justify-center bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(6,182,212,0.15),transparent_50%)]" />
       <Card className="relative z-10 w-full max-w-2xl">
-        <CardHeader className="space-y-6 text-center">
+        <CardHeader className="space-y-4 text-center pb-2">
           <div className="mx-auto flex w-fit items-center gap-3 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-1.5 backdrop-blur">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
@@ -69,8 +69,8 @@ export default function HomePage() {
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="mt-6 flex flex-col items-center">
-          <form className="w-full max-w-sm space-y-6" onSubmit={handleCreateRoom}>
+        <CardContent className="flex flex-col items-center pt-4">
+          <form className="w-full max-w-sm space-y-4" onSubmit={handleCreateRoom}>
             <label className="block space-y-3 relative group">
               <span className="text-sm font-semibold tracking-wide text-zinc-400 transition-colors group-focus-within:text-cyan-400">Optional room PIN</span>
               <Input
