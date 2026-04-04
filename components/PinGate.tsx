@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+
 interface PinGateProps {
   onSubmit: (pin: string) => Promise<void> | void;
   error?: string | null;
@@ -17,31 +27,28 @@ export function PinGate({ onSubmit, error, isLoading }: PinGateProps) {
   }
 
   return (
-    <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-950/80 px-6 backdrop-blur-sm">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-3xl border border-white/10 bg-slate-950/95 p-6 shadow-2xl shadow-black/50"
-      >
-        <h2 className="text-xl font-semibold text-white">Private room</h2>
-        <p className="mt-2 text-sm text-zinc-300">Enter the room PIN to join the watch session.</p>
+    <Dialog open>
+      <DialogContent showClose={false} className="z-30 w-[min(92vw,28rem)]">
+        <DialogHeader>
+          <DialogTitle>Private room</DialogTitle>
+          <DialogDescription>Enter the room PIN to join the watch session.</DialogDescription>
+        </DialogHeader>
 
-        <input
-          value={pin}
-          onChange={(event) => setPin(event.target.value)}
-          placeholder="Room PIN"
-          className="mt-5 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-cyan-400/60"
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            value={pin}
+            onChange={(event) => setPin(event.target.value)}
+            placeholder="Room PIN"
+            className="h-11 rounded-2xl"
+          />
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="mt-4 flex h-11 w-full items-center justify-center rounded-2xl bg-cyan-400 font-semibold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:bg-cyan-400/60"
-        >
-          {isLoading ? "Checking..." : "Unlock room"}
-        </button>
+          <Button type="submit" disabled={isLoading} className="h-11 w-full rounded-2xl">
+            {isLoading ? "Checking..." : "Unlock room"}
+          </Button>
 
-        {error ? <p className="mt-3 text-sm text-rose-300">{error}</p> : null}
-      </form>
-    </div>
+          {error ? <p className="text-sm text-rose-300">{error}</p> : null}
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

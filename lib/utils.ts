@@ -1,8 +1,14 @@
+import { type ClassValue, clsx } from "clsx";
 import { customAlphabet } from "nanoid";
+import { twMerge } from "tailwind-merge";
 
 const roomId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 8);
 
 const YOUTUBE_HOSTS = ["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"];
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export function generateRoomId() {
   return roomId();

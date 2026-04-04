@@ -3,6 +3,8 @@
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
 import { PinGate } from "@/components/PinGate";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { UrlInput } from "@/components/UrlInput";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ViewerCount } from "@/components/ViewerCount";
@@ -226,7 +228,7 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col rounded-[32px] border border-white/10 bg-slate-950/70 p-4 shadow-2xl shadow-black/40 backdrop-blur md:p-6">
+      <Card className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col bg-slate-950/70 p-4 md:p-6">
         {/* Header */}
         <div className="flex flex-col gap-4 border-b border-white/10 pb-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
@@ -234,17 +236,13 @@ export default function RoomPage({ params }: RoomPageProps) {
               <p className="text-sm text-cyan-200">Room</p>
               <h1 className="text-2xl font-semibold text-white sm:text-3xl">{roomId}</h1>
             </div>
-            {isHost && (
-              <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-0.5 text-xs font-semibold text-amber-200">
-                Host
-              </span>
-            )}
+            {isHost && <Badge variant="amber">Host</Badge>}
           </div>
           <ViewerCount count={viewerCount} />
         </div>
 
         {/* Body */}
-        <section className="relative mt-6 flex-1 rounded-[28px] border border-dashed border-white/10 bg-black/30 p-4 md:p-6">
+        <CardContent className="relative mt-6 flex-1 rounded-[28px] border border-dashed border-white/10 bg-black/30 p-4 md:p-6">
           {needsPin && (
             <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} />
           )}
@@ -275,8 +273,8 @@ export default function RoomPage({ params }: RoomPageProps) {
               />
             </div>
           </div>
-        </section>
-      </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }
