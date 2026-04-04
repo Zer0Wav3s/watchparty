@@ -1,14 +1,18 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
+import { Crown, DoorClosed, Loader2, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
 import { PinGate } from "@/components/PinGate";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { UrlInput } from "@/components/UrlInput";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ViewerCount } from "@/components/ViewerCount";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { getPartyKitWebSocketUrl, parseServerMessage, sendPartyMessage } from "@/lib/partykit";
 import type { ServerMessage, VideoType } from "@/lib/types";
 import { isYouTubeUrl, normalizeUrl } from "@/lib/utils";
@@ -20,15 +24,24 @@ interface RoomPageProps {
   params: Promise<{ id: string }>;
 }
 
+interface ToastMessage {
+  id: number;
+  message: string;
+  tone?: "default" | "danger";
+}
+
 export default function RoomPage({ params }: RoomPageProps) {
   const resolvedParams = use(params);
   const roomId = resolvedParams.id;
+  const router = useRouter();
 
   const socketRef = useRef<WebSocket | null>(null);
   const positionRef = useRef(0);
   const ignoreNextPlayRef = useRef(false);
   const ignoreNextPauseRef = useRef(false);
   const connectionIdRef = useRef<string | null>(null);
+  const previousViewerCountRef = useRef<number | null>(null);
+  const toastTimeoutsRef = useRef<number[]>([]);
 
   const [hostToken, setHostToken] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(true);
@@ -43,8 +56,21 @@ export default function RoomPage({ params }: RoomPageProps) {
   const [seekTo, setSeekTo] = useState<number | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [storedPin, setStoredPin] = useState<string | null>(null);
+  const [endingRoom, setEndingRoom] = useState(false);
+  const [roomEnded, setRoomEnded] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+
+  const addToast = useCallback((message: string, tone: ToastMessage["tone"] = "default") => {
+    const id = Date.now() + Math.random();
+    setToasts((current) => [...current, { id, message, tone }]);
+
+    const timeout = window.setTimeout(() => {
+      setToasts((current) => current.filter((toast) => toast.id !== id));
+    }, 2600);
+
+    toastTimeoutsRef.current.push(timeout);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -56,98 +82,124 @@ export default function RoomPage({ params }: RoomPageProps) {
     }
   }, [roomId]);
 
-  const handleServerMessage = useCallback((message: ServerMessage) => {
-    switch (message.type) {
-      case "pin-required":
-        setNeedsPin(true);
-        return;
+  useEffect(() => {
+    const timeouts = toastTimeoutsRef.current;
 
-      case "auth-ok":
-        setNeedsPin(false);
-        setPinError(null);
-        setIsSubmittingPin(false);
-        setIsHost(message.isHost);
-        connectionIdRef.current = message.connectionId;
-        return;
-
-      case "auth-fail":
-        setPinError(message.error);
-        setIsSubmittingPin(false);
-        return;
-
-      case "sync":
-        setViewerCount(message.viewers);
-        setVideoUrl(message.videoUrl);
-        setVideoType(message.videoType);
-        setIsHost(message.isHost);
-        setIsPlaying(message.isPlaying);
-        setSeekTo(message.position);
-        connectionIdRef.current = message.connectionId;
-        return;
-
-      case "viewer-count":
-        setViewerCount(message.count);
-        return;
-
-      case "video-change":
-        setVideoUrl(message.url);
-        setVideoType(message.videoType);
-        setIsPlaying(message.isPlaying);
-        setSeekTo(message.position);
-        return;
-
-      case "host-changed":
-        setIsHost(message.connectionId === connectionIdRef.current);
-        return;
-
-      case "play":
-        ignoreNextPlayRef.current = true;
-        setIsPlaying(true);
-        setSeekTo(message.position);
-        return;
-
-      case "pause":
-        ignoreNextPauseRef.current = true;
-        setIsPlaying(false);
-        setSeekTo(message.position);
-        return;
-
-      case "seek":
-        setSeekTo(message.position);
-        return;
-
-      case "heartbeat": {
-        const drift = Math.abs(positionRef.current - message.position);
-        if (drift > DRIFT_THRESHOLD_SECS) {
-          setSeekTo(message.position);
-        }
-        return;
-      }
-
-      case "error":
-        setError(message.error);
-        return;
-
-      case "room-not-found":
-        setError("Room not found.");
-        return;
-
-      default:
-        return;
-    }
+    return () => {
+      timeouts.forEach((timeout) => window.clearTimeout(timeout));
+    };
   }, []);
+
+  const handleServerMessage = useCallback(
+    (message: ServerMessage) => {
+      switch (message.type) {
+        case "pin-required":
+          setNeedsPin(true);
+          return;
+
+        case "auth-ok":
+          setNeedsPin(false);
+          setPinError(null);
+          setIsSubmittingPin(false);
+          setIsHost(message.isHost);
+          connectionIdRef.current = message.connectionId;
+          return;
+
+        case "auth-fail":
+          setPinError(message.error);
+          setIsSubmittingPin(false);
+          return;
+
+        case "sync":
+          setViewerCount(message.viewers);
+          setVideoUrl(message.videoUrl);
+          setVideoType(message.videoType);
+          setIsHost(message.isHost);
+          setIsPlaying(message.isPlaying);
+          setSeekTo(message.position);
+          connectionIdRef.current = message.connectionId;
+          return;
+
+        case "viewer-count":
+          setViewerCount(message.count);
+          return;
+
+        case "video-change":
+          setVideoUrl(message.url);
+          setVideoType(message.videoType);
+          setIsPlaying(message.isPlaying);
+          setSeekTo(message.position);
+          return;
+
+        case "host-changed":
+          setIsHost(message.connectionId === connectionIdRef.current);
+          return;
+
+        case "play":
+          ignoreNextPlayRef.current = true;
+          setIsPlaying(true);
+          setSeekTo(message.position);
+          return;
+
+        case "pause":
+          ignoreNextPauseRef.current = true;
+          setIsPlaying(false);
+          setSeekTo(message.position);
+          return;
+
+        case "seek":
+          setSeekTo(message.position);
+          return;
+
+        case "heartbeat": {
+          const drift = Math.abs(positionRef.current - message.position);
+          if (drift > DRIFT_THRESHOLD_SECS) {
+            setSeekTo(message.position);
+          }
+          return;
+        }
+
+        case "room-ended":
+          setRoomEnded(true);
+          setEndingRoom(false);
+          setIsPlaying(false);
+          setError(null);
+          addToast("This room has ended.", "danger");
+          return;
+
+        case "error":
+          setEndingRoom(false);
+          setError(message.error);
+          return;
+
+        case "room-not-found":
+          setError("Room not found.");
+          return;
+
+        default:
+          return;
+      }
+    },
+    [addToast],
+  );
 
   useEffect(() => {
     const socket = new WebSocket(getPartyKitWebSocketUrl(roomId, { hostToken, pin: storedPin }));
     socketRef.current = socket;
 
-    socket.addEventListener("open", () => setIsConnecting(false));
+    socket.addEventListener("open", () => {
+      setIsConnecting(false);
+      setError(null);
+    });
 
     socket.addEventListener("message", (event) => {
       handleServerMessage(parseServerMessage(event as MessageEvent<string>));
     });
 
-    socket.addEventListener("close", () => setIsConnecting(false));
+    socket.addEventListener("close", () => {
+      setIsConnecting(false);
+      setEndingRoom(false);
+    });
 
     return () => {
       socket.close();
@@ -155,16 +207,51 @@ export default function RoomPage({ params }: RoomPageProps) {
     };
   }, [hostToken, storedPin, roomId, handleServerMessage]);
 
-  // Heartbeat: host sends position every 5 seconds
   useEffect(() => {
-    if (!isHost || !isPlaying) return;
+    if (!isHost || !isPlaying || roomEnded) return;
 
-    const timer = setInterval(() => {
+    const timer = window.setInterval(() => {
       sendPartyMessage(socketRef.current, { type: "heartbeat", position: positionRef.current });
     }, HEARTBEAT_INTERVAL_MS);
 
-    return () => clearInterval(timer);
-  }, [isHost, isPlaying]);
+    return () => window.clearInterval(timer);
+  }, [isHost, isPlaying, roomEnded]);
+
+  useEffect(() => {
+    if (roomEnded) {
+      socketRef.current?.close();
+      const redirectTimer = window.setTimeout(() => {
+        router.push("/");
+      }, 3000);
+
+      return () => window.clearTimeout(redirectTimer);
+    }
+  }, [roomEnded, router]);
+
+  useEffect(() => {
+    if (roomEnded) {
+      previousViewerCountRef.current = viewerCount;
+      return;
+    }
+
+    const previousCount = previousViewerCountRef.current;
+    if (previousCount === null) {
+      previousViewerCountRef.current = viewerCount;
+      return;
+    }
+
+    if (viewerCount > previousCount) {
+      const joinedCount = viewerCount - previousCount;
+      addToast(joinedCount === 1 ? "Someone joined the watch party." : `${joinedCount} people joined the watch party.`);
+    }
+
+    if (viewerCount < previousCount) {
+      const leftCount = previousCount - viewerCount;
+      addToast(leftCount === 1 ? "Someone left the room." : `${leftCount} people left the room.`);
+    }
+
+    previousViewerCountRef.current = viewerCount;
+  }, [viewerCount, roomEnded, addToast]);
 
   function handlePinSubmit(pin: string) {
     setIsSubmittingPin(true);
@@ -231,77 +318,180 @@ export default function RoomPage({ params }: RoomPageProps) {
     positionRef.current = position;
   }
 
+  function handleEndRoom() {
+    const confirmed = window.confirm("End this room for everyone?");
+    if (!confirmed) {
+      return;
+    }
+
+    setEndingRoom(true);
+    const sent = sendPartyMessage(socketRef.current, { type: "end-room" });
+
+    if (!sent) {
+      setEndingRoom(false);
+      setError("Could not reach the room server. Try again.");
+    }
+  }
+
   return (
-    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-transparent p-4 sm:p-6 lg:p-8 relative overflow-hidden transition-colors duration-500">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(236,72,153,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top_center,rgba(6,182,212,0.05),transparent_50%)]" />
-      
-      {/* Background Blobs for Landing */}
-      <div className="party-blob party-blob-one opacity-30 dark:opacity-10" />
-      <div className="party-blob party-blob-two opacity-30 dark:opacity-10" />
-      <div className="party-blob party-blob-three opacity-30 dark:opacity-10" />
+    <main className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-transparent p-4 sm:p-6 lg:p-8">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.7),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(236,72,153,0.12),transparent_30%),radial-gradient(circle_at_82%_16%,rgba(139,92,246,0.15),transparent_28%),radial-gradient(circle_at_65%_82%,rgba(20,184,166,0.14),transparent_30%)] dark:bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.35),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(236,72,153,0.12),transparent_30%),radial-gradient(circle_at_82%_16%,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_65%_82%,rgba(20,184,166,0.12),transparent_30%)]" />
+      <div className="party-blob party-blob-one opacity-35 dark:opacity-15" />
+      <div className="party-blob party-blob-two opacity-35 dark:opacity-15" />
+      <div className="party-blob party-blob-three opacity-35 dark:opacity-15" />
 
-      <Card className="relative z-10 flex w-full max-w-6xl flex-col bg-white/90 dark:bg-[#050505] shadow-2xl border-white/20 dark:border-white/10 backdrop-blur-xl">
-        {/* Header */}
-        <div className="flex flex-col gap-4 border-b border-fuchsia-500/10 dark:border-white/5 p-6 md:flex-row md:items-center md:justify-between md:px-8">
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col">
-              <p className="text-xs font-bold tracking-[0.15em] text-fuchsia-600 dark:text-cyan-500/70 uppercase">
-                Session
-              </p>
-              <h1 className="font-mono text-xl font-bold tracking-tight text-slate-900 dark:text-white/90 sm:text-2xl">
-                {roomId}
-              </h1>
-            </div>
-            {isHost && <Badge variant="amber" className="ml-2">Admin</Badge>}
-            <ThemeToggle />
-          </div>
-          <ViewerCount count={viewerCount} />
-        </div>
+      <AnimatePresence>
+        {toasts.length > 0 ? (
+          <motion.div
+            className="pointer-events-none fixed right-4 top-4 z-[80] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-3 sm:right-6 sm:top-6"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            {toasts.map((toast) => (
+              <motion.div
+                key={toast.id}
+                initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12, scale: 0.96 }}
+                transition={{ duration: 0.2 }}
+                className={`rounded-[24px] border px-4 py-3 text-sm font-semibold shadow-[0_24px_60px_-35px_rgba(15,23,42,0.85)] backdrop-blur-xl ${
+                  toast.tone === "danger"
+                    ? "border-rose-200 bg-rose-50/90 text-rose-700 dark:border-rose-400/20 dark:bg-rose-500/12 dark:text-rose-100"
+                    : "border-white/80 bg-white/88 text-slate-700 dark:border-white/10 dark:bg-slate-950/75 dark:text-white/85"
+                }`}
+              >
+                {toast.message}
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
-        {/* Body */}
-        <CardContent className="relative flex-1 p-4 md:p-8">
-          {needsPin && (
-            <div className="absolute inset-0 z-40 bg-white/60 dark:bg-black/60 backdrop-blur-md" />
-          )}
-          {needsPin && (
-            <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} />
-          )}
-
-          <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-            <UrlInput disabled={needsPin || isConnecting || extracting} isHost={isHost} onSubmit={handleVideoSubmit} />
-
-            {error && (
-              <p className="animate-in fade-in slide-in-from-top-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-6 py-4 text-sm font-medium text-rose-400">
-                {error}
-              </p>
-            )}
-
-            {extracting && (
-              <div className="flex items-center gap-3 rounded-2xl border border-fuchsia-500/20 dark:border-cyan-500/20 bg-fuchsia-500/10 dark:bg-cyan-500/10 px-6 py-4">
-                <span className="relative flex h-3 w-3">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 dark:bg-cyan-400 opacity-75"></span>
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-fuchsia-500 dark:bg-cyan-500"></span>
-                </span>
-                <p className="text-sm font-bold tracking-wide text-fuchsia-600 dark:text-cyan-400">Negotiating stream source...</p>
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-6xl"
+      >
+        <Card className="overflow-hidden border-white/70 bg-white/88 backdrop-blur-2xl dark:border-white/10 dark:bg-[#05070d]/86">
+          <div className="flex flex-col gap-5 border-b border-fuchsia-500/10 p-5 sm:p-6 md:flex-row md:items-center md:justify-between md:px-8 dark:border-white/8">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="space-y-1">
+                <p className="text-xs font-black tracking-[0.18em] text-fuchsia-600 uppercase dark:text-cyan-300/80">Watch room</p>
+                <h1 className="font-mono text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">{roomId}</h1>
               </div>
-            )}
+              {isHost ? (
+                <Badge variant="amber" className="gap-2 px-4 py-2 text-xs">
+                  <Crown className="h-3.5 w-3.5" />
+                  Host
+                </Badge>
+              ) : null}
+              {isConnecting ? (
+                <Badge variant="outline" className="gap-2 px-4 py-2 text-xs">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Connecting
+                </Badge>
+              ) : null}
+            </div>
 
-            <div className="group relative aspect-video w-full overflow-hidden rounded-[32px] border border-black/5 dark:border-white/5 bg-black shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
-              <VideoPlayer
-                url={videoUrl}
-                type={videoType}
-                isPlaying={isPlaying}
-                seekTo={seekTo}
-                seekThreshold={DRIFT_THRESHOLD_SECS}
-                onPlay={handlePlay}
-                onPause={handlePause}
-                onSeek={handleSeek}
-                onTimeUpdate={handleTimeUpdate}
-              />
+            <div className="flex flex-wrap items-center gap-3 md:justify-end">
+              <ViewerCount count={viewerCount} />
+              <ThemeToggle />
+              {isHost ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  disabled={endingRoom || roomEnded}
+                  onClick={handleEndRoom}
+                  className="h-11 rounded-full px-5 text-sm font-black"
+                >
+                  {endingRoom ? <Loader2 className="h-4 w-4 animate-spin" /> : <DoorClosed className="h-4 w-4" />}
+                  End room
+                </Button>
+              ) : null}
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <CardContent className="relative p-4 md:p-8">
+            {needsPin ? <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-md dark:bg-black/60" /> : null}
+            {needsPin ? <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} /> : null}
+
+            <AnimatePresence>
+              {roomEnded ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-30 flex items-center justify-center rounded-[28px] bg-white/80 px-6 text-center backdrop-blur-md dark:bg-slate-950/82"
+                >
+                  <div className="max-w-md space-y-4">
+                    <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-rose-100 text-rose-500 dark:bg-rose-500/12 dark:text-rose-200">
+                      <DoorClosed className="h-8 w-8" />
+                    </div>
+                    <div className="space-y-2">
+                      <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">This room has ended</h2>
+                      <p className="text-base font-medium leading-7 text-slate-600 dark:text-white/65">
+                        The host closed the party. Sending you back home in a couple seconds.
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : null}
+            </AnimatePresence>
+
+            <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 md:gap-8">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-white/50">
+                    Queue the night
+                  </p>
+                  <p className="text-base font-medium text-slate-600 dark:text-white/65">
+                    Hosts can drop the next link. Everyone else just shows up and vibes.
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/82 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/6 dark:text-white/80">
+                  <Sparkles className="h-4 w-4 text-fuchsia-500 dark:text-cyan-300" />
+                  Playback stays synced across the room
+                </div>
+              </div>
+
+              <UrlInput disabled={needsPin || isConnecting || extracting || roomEnded} isHost={isHost} onSubmit={handleVideoSubmit} />
+
+              {error ? (
+                <p className="rounded-[24px] border border-rose-200 bg-rose-50 px-6 py-4 text-sm font-medium text-rose-600 dark:border-rose-400/20 dark:bg-rose-500/10 dark:text-rose-200">
+                  {error}
+                </p>
+              ) : null}
+
+              {extracting ? (
+                <div className="flex items-center gap-3 rounded-[24px] border border-fuchsia-200 bg-fuchsia-50/85 px-6 py-4 dark:border-cyan-400/20 dark:bg-cyan-400/10">
+                  <span className="relative flex h-3 w-3">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75 dark:bg-cyan-300" />
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-fuchsia-500 dark:bg-cyan-300" />
+                  </span>
+                  <p className="text-sm font-bold tracking-wide text-fuchsia-700 dark:text-cyan-100">Finding the best stream source...</p>
+                </div>
+              ) : null}
+
+              <div className="group relative aspect-video w-full overflow-hidden rounded-[32px] border border-black/5 bg-black shadow-[0_40px_100px_-42px_rgba(15,23,42,0.9)] ring-1 ring-black/10 dark:border-white/8 dark:ring-white/10">
+                <VideoPlayer
+                  url={videoUrl}
+                  type={videoType}
+                  isPlaying={isPlaying}
+                  seekTo={seekTo}
+                  seekThreshold={DRIFT_THRESHOLD_SECS}
+                  onPlay={handlePlay}
+                  onPause={handlePause}
+                  onSeek={handleSeek}
+                  onTimeUpdate={handleTimeUpdate}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </main>
   );
 }
