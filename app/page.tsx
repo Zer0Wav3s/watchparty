@@ -31,14 +31,12 @@ export default function HomePage() {
         throw new Error("Failed to create room");
       }
 
-      const data = (await response.json()) as { roomId: string; hostToken: string | null };
+      const data = (await response.json()) as { roomId: string; pin: boolean };
 
-      if (typeof window !== "undefined") {
-        if (data.hostToken) {
-          sessionStorage.setItem(`watchparty:${data.roomId}:hostToken`, data.hostToken);
-        } else {
-          sessionStorage.removeItem(`watchparty:${data.roomId}:hostToken`);
-        }
+      // Store the PIN in sessionStorage so the room page can pass it to PartyKit
+      // on first connection (lazy room initialization)
+      if (typeof window !== "undefined" && pin.trim()) {
+        sessionStorage.setItem(`watchparty:${data.roomId}:pin`, pin.trim());
       }
 
       router.push(`/room/${data.roomId}`);

@@ -43,9 +43,16 @@ export default function RoomPage({ params }: RoomPageProps) {
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [storedPin, setStoredPin] = useState<string | null>(null);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     setHostToken(sessionStorage.getItem(`watchparty:${roomId}:hostToken`));
+    const pin = sessionStorage.getItem(`watchparty:${roomId}:pin`);
+    if (pin) {
+      setStoredPin(pin);
+      sessionStorage.removeItem(`watchparty:${roomId}:pin`);
+    }
   }, [roomId]);
 
   const handleServerMessage = useCallback((message: ServerMessage) => {
@@ -130,7 +137,7 @@ export default function RoomPage({ params }: RoomPageProps) {
   }, []);
 
   useEffect(() => {
-    const socket = new WebSocket(getPartyKitWebSocketUrl(roomId, hostToken));
+    const socket = new WebSocket(getPartyKitWebSocketUrl(roomId, { hostToken, pin: storedPin }));
     socketRef.current = socket;
 
     socket.addEventListener("open", () => setIsConnecting(false));
@@ -145,7 +152,7 @@ export default function RoomPage({ params }: RoomPageProps) {
       socket.close();
       socketRef.current = null;
     };
-  }, [hostToken, roomId, handleServerMessage]);
+  }, [hostToken, storedPin, roomId, handleServerMessage]);
 
   // Heartbeat: host sends position every 5 seconds
   useEffect(() => {
