@@ -4,6 +4,7 @@ import { use, useEffect, useRef, useState } from "react";
 
 import { PinGate } from "@/components/PinGate";
 import { UrlInput } from "@/components/UrlInput";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import { ViewerCount } from "@/components/ViewerCount";
 import { getPartyKitWebSocketUrl, parseServerMessage, sendPartyMessage } from "@/lib/partykit";
 import type { ServerMessage, VideoType } from "@/lib/types";
@@ -27,6 +28,8 @@ export default function RoomPage({ params }: RoomPageProps) {
   const [isHost, setIsHost] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoType, setVideoType] = useState<VideoType | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [seekTo, setSeekTo] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -82,6 +85,8 @@ export default function RoomPage({ params }: RoomPageProps) {
         setVideoUrl(message.videoUrl);
         setVideoType(message.videoType);
         setIsHost(message.isHost);
+        setIsPlaying(message.isPlaying);
+        setSeekTo(message.position);
         return;
       }
       case "viewer-count": {
@@ -91,6 +96,8 @@ export default function RoomPage({ params }: RoomPageProps) {
       case "video-change": {
         setVideoUrl(message.url);
         setVideoType(message.videoType);
+        setIsPlaying(message.isPlaying);
+        setSeekTo(message.position);
         return;
       }
       case "host-changed": {
@@ -114,6 +121,23 @@ export default function RoomPage({ params }: RoomPageProps) {
     return;
   }
 
+  function handlePlay(position: number) {
+    setIsPlaying(true);
+    setSeekTo(position);
+    sendPartyMessage(socketRef.current, { type: "play", position });
+  }
+
+  function handlePause(position: number) {
+    setIsPlaying(false);
+    setSeekTo(position);
+    sendPartyMessage(socketRef.current, { type: "pause", position });
+  }
+
+  function handleSeek(position: number) {
+    setSeekTo(position);
+    sendPartyMessage(socketRef.current, { type: "seek", position });
+  }
+
   return (
     <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col rounded-[32px] border border-white/10 bg-slate-950/70 p-4 shadow-2xl shadow-black/40 backdrop-blur md:p-6">
@@ -133,18 +157,16 @@ export default function RoomPage({ params }: RoomPageProps) {
           <div className="space-y-6">
             <UrlInput disabled={needsPin || isConnecting} isHost={isHost} onSubmit={handleVideoSubmit} />
 
-            <div className="flex aspect-video items-center justify-center rounded-[24px] border border-white/10 bg-slate-900/80 text-center text-zinc-400">
-              {videoUrl && videoType ? (
-                <div className="space-y-2 px-6">
-                  <p className="text-sm uppercase tracking-[0.2em] text-cyan-200">Video ready</p>
-                  <p className="break-all text-sm text-zinc-300">{videoUrl}</p>
-                </div>
-              ) : (
-                <div className="space-y-2 px-6">
-                  <p className="text-lg font-medium text-white">Player loading next</p>
-                  <p className="text-sm text-zinc-400">The synced player gets wired up in the next build step.</p>
-                </div>
-              )}
+            <div className="aspect-video">
+              <VideoPlayer
+                url={videoUrl}
+                type={videoType}
+                isPlaying={isPlaying}
+                seekTo={seekTo}
+                onPlay={handlePlay}
+                onPause={handlePause}
+                onSeek={handleSeek}
+              />
             </div>
           </div>
         </section>
