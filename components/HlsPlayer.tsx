@@ -33,16 +33,33 @@ export function HlsPlayer({
       return;
     }
 
-    if (src.includes(".m3u8") && Hls.isSupported()) {
-      const hls = new Hls();
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        xhrSetup: (xhr) => {
+          // Some CDNs require a Referer to serve segments
+          try {
+            xhr.setRequestHeader("Referer", new URL(src).origin + "/");
+          } catch {
+            // CORS may block this — that's fine, the browser handles it
+          }
+        },
+      });
       hls.loadSource(src);
       hls.attachMedia(video);
+
+      hls.on(Hls.Events.ERROR, (_event, data) => {
+        if (data.fatal) {
+          // If HLS fails, try direct playback as fallback
+          video.src = src;
+        }
+      });
 
       return () => {
         hls.destroy();
       };
     }
 
+    // Safari has native HLS support
     video.src = src;
     return undefined;
   }, [src]);
