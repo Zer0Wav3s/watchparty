@@ -35,14 +35,26 @@ export default class RoomServer implements Server {
   async onConnect(conn: Connection<ConnectionMeta>, ctx: ConnectionContext) {
     await this.ensureStateLoaded();
 
-    if (!this.state.roomId) {
-      conn.send(JSON.stringify({ type: "room-not-found" } satisfies ServerMessage));
-      conn.close(4404, "Room not found");
-      return;
-    }
-
     const requestUrl = new URL(ctx.request.url);
     const hostToken = requestUrl.searchParams.get("hostToken");
+    const initPin = requestUrl.searchParams.get("initPin");
+
+    // Lazy room initialization: create room state on first WebSocket connect
+    if (!this.state.roomId) {
+      this.state = {
+        roomId: this.room.id,
+        pin: initPin || null,
+        hostToken: initPin ? hostTokenId() : null,
+        hostConnectionId: null,
+        videoUrl: null,
+        videoType: null,
+        isPlaying: false,
+        position: 0,
+        lastUpdateAt: Date.now(),
+        viewers: new Map<string, ViewerState>(),
+      };
+      await this.persistState();
+    }
     const requiresPin = Boolean(this.state.pin);
     const autoAuthed = !requiresPin || (!!hostToken && hostToken === this.state.hostToken);
 
