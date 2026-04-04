@@ -13,8 +13,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WatchParty",
-  description: "Private synced video rooms powered by Next.js and PartyKit.",
+  title: "WatchParty — Watch Together, Perfectly in Sync",
+  description:
+    "Create a room, share the link, and watch videos together with perfectly synced playback. Supports YouTube, HLS streams, and more.",
+  metadataBase: new URL("https://watchparty-coral.vercel.app"),
+  openGraph: {
+    title: "WatchParty — Watch Together, Perfectly in Sync",
+    description:
+      "Create a room, share the link, and watch videos together with perfectly synced playback.",
+    siteName: "WatchParty",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "WatchParty — Watch Together, Perfectly in Sync",
+    description:
+      "Create a room, share the link, and watch videos together with perfectly synced playback.",
+  },
 };
 
 export default function RootLayout({
