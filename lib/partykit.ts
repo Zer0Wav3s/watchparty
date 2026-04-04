@@ -4,14 +4,22 @@ export function getPartyKitHost() {
   return process.env.NEXT_PUBLIC_PARTYKIT_HOST || "127.0.0.1:1999";
 }
 
-export function getPartyKitWebSocketUrl(roomId: string, hostToken?: string | null) {
+export function getPartyKitWebSocketUrl(
+  roomId: string,
+  options?: { hostToken?: string | null; pin?: string | null },
+) {
   const host = getPartyKitHost();
   const isLocal = host.startsWith("localhost") || host.startsWith("127.0.0.1");
   const protocol = isLocal ? "ws" : "wss";
   const url = new URL(`${protocol}://${host}/parties/room/${roomId}`);
 
-  if (hostToken) {
-    url.searchParams.set("hostToken", hostToken);
+  if (options?.hostToken) {
+    url.searchParams.set("hostToken", options.hostToken);
+  }
+
+  // Pass PIN on first connection so PartyKit can lazily initialize the room
+  if (options?.pin) {
+    url.searchParams.set("initPin", options.pin);
   }
 
   return url.toString();

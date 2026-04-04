@@ -4,15 +4,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl text-base font-medium transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+  "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-[24px] text-lg font-black transition-all disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-4 focus-visible:ring-fuchsia-300 focus-visible:ring-offset-2 focus-visible:ring-offset-pink-50 active:scale-95 duration-200",
   {
     variants: {
       variant: {
-        default: "bg-cyan-500 text-slate-950 hover:bg-cyan-400 shadow-lg shadow-cyan-500/20 active:scale-[0.98]",
-        secondary: "bg-white text-slate-950 hover:bg-zinc-200 active:scale-[0.98]",
-        outline: "border border-white/10 bg-white/5 text-white hover:bg-white/10 active:scale-[0.98]",
-        ghost: "text-zinc-300 hover:bg-white/10 hover:text-white active:scale-[0.98]",
-        destructive: "bg-rose-500 text-white hover:bg-rose-400 shadow-lg shadow-rose-500/20 active:scale-[0.98]",
+        default: "bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white hover:from-fuchsia-400 hover:to-pink-400 shadow-xl shadow-fuchsia-500/30",
+        secondary: "bg-white text-fuchsia-600 border-2 border-fuchsia-100 hover:bg-fuchsia-50 hover:border-fuchsia-200 shadow-md",
+        outline: "border-3 border-pink-200 bg-transparent text-pink-600 hover:bg-pink-50",
+        ghost: "text-slate-500 hover:bg-pink-100/50 hover:text-pink-600",
+        destructive: "bg-gradient-to-r from-rose-500 to-orange-500 text-white hover:from-rose-400 hover:to-orange-400 shadow-xl shadow-rose-500/30",
       },
       size: {
         default: "h-12 px-6 py-2",

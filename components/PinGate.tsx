@@ -28,37 +28,37 @@ export function PinGate({ onSubmit, error, isLoading }: PinGateProps) {
 
   return (
     <Dialog open>
-      <DialogContent showClose={false} className="z-50 w-11/12 max-w-sm sm:max-w-md">
-        <DialogHeader className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10 ring-1 ring-cyan-500/20">
-            <svg className="h-8 w-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+      <DialogContent showClose={false} className="z-[100] w-11/12 max-w-sm sm:max-w-md rounded-[48px] bg-white border-4 border-fuchsia-200 shadow-[0_30px_60px_-15px_rgba(217,70,239,0.4)] p-8">
+        <DialogHeader className="space-y-6 flex flex-col items-center">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[32px] bg-gradient-to-br from-fuchsia-100 to-pink-100 shadow-inner">
+            <span className="text-4xl translate-y-1">🪄</span>
           </div>
-          <DialogTitle className="text-center">Restricted access.</DialogTitle>
-          <DialogDescription className="text-center text-base">
-            This session is protected by a PIN.
-          </DialogDescription>
+          <div className="space-y-2 text-center">
+            <DialogTitle className="text-3xl font-black text-slate-800">VIP Access Only</DialogTitle>
+            <DialogDescription className="text-lg font-medium text-slate-500">
+              Got the secret word? Enter the PIN below.
+            </DialogDescription>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-6">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="relative group">
             <Input
               value={pin}
               onChange={(event) => setPin(event.target.value)}
-              placeholder="Enter PIN"
+              placeholder="Secret PIN"
               type="password"
-              className="h-14 w-full rounded-2xl bg-black/50 text-center text-xl tracking-widest text-zinc-100 outline-none transition-colors"
+              className="h-16 w-full rounded-3xl bg-slate-50 border-2 border-slate-200 text-center text-2xl tracking-widest text-slate-800 outline-none transition-all placeholder:text-slate-300 focus:border-fuchsia-400 font-black shadow-inner"
             />
           </div>
 
-          <Button type="submit" disabled={isLoading} size="lg" className="w-full text-base font-bold tracking-wide">
-            {isLoading ? "Authenticating..." : "Join session"}
+          <Button type="submit" disabled={isLoading} size="lg" className="w-full h-16 rounded-3xl text-lg font-black tracking-wide border-none bg-gradient-to-r from-fuchsia-500 to-pink-500 hover:from-fuchsia-400 hover:to-pink-400 text-white shadow-xl shadow-fuchsia-500/30 transition-transform active:scale-95">
+            {isLoading ? "Checking list..." : "Let me in 🚀"}
           </Button>
 
           {error ? (
-            <p className="animate-in fade-in slide-in-from-bottom-2 text-center text-sm font-medium text-rose-400">
-              {error}
+            <p className="animate-bounce text-center text-sm font-bold text-rose-500 bg-rose-50 border border-rose-200 rounded-xl py-3 px-4">
+              Oops! {error} Try again.
             </p>
           ) : null}
         </form>
