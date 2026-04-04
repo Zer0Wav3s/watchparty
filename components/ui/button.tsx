@@ -4,25 +4,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[28px] text-base font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white active:scale-[0.98] hover:scale-[1.02]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium outline-none transition-[background,color,border-color,box-shadow,opacity,transform] duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-[var(--border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface)]",
   {
     variants: {
       variant: {
         default:
-          "border border-transparent bg-[linear-gradient(135deg,#ec4899_0%,#8b5cf6_52%,#14b8a6_100%)] text-white shadow-[0_22px_50px_-24px_rgba(168,85,247,0.9)] hover:brightness-105 hover:shadow-[0_28px_70px_-28px_rgba(168,85,247,0.95)]",
-        secondary:
-          "border border-white/80 bg-white text-slate-800 shadow-[0_16px_32px_-24px_rgba(15,23,42,0.5)] hover:bg-pink-50",
-        outline:
-          "border border-fuchsia-200 bg-white/70 text-slate-700 shadow-[0_16px_36px_-26px_rgba(168,85,247,0.5)] hover:bg-white dark:border-white/10 dark:bg-slate-950/55 dark:text-white/85",
-        ghost: "text-slate-600 hover:bg-white/70 hover:text-slate-900 dark:text-white/70 dark:hover:bg-white/8 dark:hover:text-white",
-        destructive:
-          "border border-rose-200 bg-rose-500 text-white shadow-[0_18px_40px_-20px_rgba(244,63,94,0.8)] hover:bg-rose-400 hover:shadow-[0_24px_55px_-24px_rgba(244,63,94,0.95)]",
+          "border border-transparent bg-[image:var(--button-gradient)] text-white shadow-none hover:bg-[image:var(--button-gradient-hover)]",
+        outline: "border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)]",
+        ghost: "border border-transparent bg-transparent text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] hover:text-[var(--text-primary)]",
+        destructive: "border border-transparent bg-[var(--danger)] text-white hover:bg-[var(--danger-hover)]",
       },
       size: {
-        default: "h-12 px-6 py-2",
-        sm: "h-10 rounded-[22px] px-4 text-sm",
-        lg: "h-14 rounded-[28px] px-8 text-lg",
-        icon: "h-12 w-12 rounded-full",
+        default: "h-12 px-4 py-2 text-base",
+        sm: "h-8 rounded-[8px] px-3 text-sm",
+        lg: "h-12 px-6 py-2 text-base",
+        icon: "h-10 w-10 rounded-full",
       },
     },
     defaultVariants: {

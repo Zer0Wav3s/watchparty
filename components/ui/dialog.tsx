@@ -1,7 +1,6 @@
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -15,49 +14,37 @@ function DialogPortal(props: React.ComponentProps<typeof DialogPrimitive.Portal>
 }
 
 function DialogOverlay({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
-  return (
-    <DialogPrimitive.Overlay
-      data-slot="dialog-overlay"
-      className={cn("fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm", className)}
-      {...props}
-    />
-  );
+  return <DialogPrimitive.Overlay data-slot="dialog-overlay" className={cn("fixed inset-0 z-50 bg-black/50", className)} {...props} />;
 }
 
-function DialogContent({ className, children, showClose = false, ...props }: React.ComponentProps<typeof DialogPrimitive.Content> & { showClose?: boolean }) {
+function DialogContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) {
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 rounded-[32px] border border-white/5 bg-[#0a0a0c] p-8 shadow-2xl shadow-black/80 ring-1 ring-white/10 inset-ring inset-ring-white/5",
+          "fixed top-1/2 left-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-[0_1px_3px_rgba(0,0,0,0.05)] dark:shadow-none",
           className,
         )}
         {...props}
       >
         {children}
-        {showClose ? (
-          <DialogPrimitive.Close className="absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-cyan-400/60">
-            <X className="size-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
-        ) : null}
       </DialogPrimitive.Content>
     </DialogPortal>
   );
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-3 text-center sm:text-left", className)} {...props} />;
+  return <div className={cn("flex flex-col gap-2 text-center", className)} {...props} />;
 }
 
 function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title className={cn("text-2xl font-bold tracking-tight text-white", className)} {...props} />;
+  return <DialogPrimitive.Title className={cn("text-2xl leading-[1.3] font-bold text-[var(--text-primary)]", className)} {...props} />;
 }
 
 function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn("text-base text-zinc-400", className)} {...props} />;
+  return <DialogPrimitive.Description className={cn("text-sm leading-[1.5] font-medium text-[var(--text-secondary)]", className)} {...props} />;
 }
 
 export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle };

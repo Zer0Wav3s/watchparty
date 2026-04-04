@@ -1,15 +1,51 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fff1f7;
-  --foreground: #0f172a;
+  --bg: #F8F9FC;
+  --bg-gradient-from: #EEF0FF;
+  --bg-gradient-to: #FDF2F8;
+  --surface: #FFFFFF;
+  --surface-hover: #F9FAFB;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --border: #E5E7EB;
+  --border-focus: #A78BFA;
+  --accent-primary: #8B5CF6;
+  --accent-primary-hover: #7C3AED;
+  --accent-secondary: #EC4899;
+  --success: #10B981;
+  --danger: #EF4444;
+  --danger-hover: #DC2626;
+  --button-gradient: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  --button-gradient-hover: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%);
+}
+
+.dark {
+  --bg: #0F1117;
+  --bg-gradient-from: #0F1117;
+  --bg-gradient-to: #0F1117;
+  --surface: #1A1D2E;
+  --surface-hover: #242840;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --border: #2D3148;
+  --border-focus: #A78BFA;
+  --accent-primary: #A78BFA;
+  --accent-primary-hover: #8B5CF6;
+  --accent-secondary: #F472B6;
+  --success: #34D399;
+  --danger: #F87171;
+  --danger-hover: #EF4444;
+  --button-gradient: linear-gradient(135deg, #A78BFA 0%, #F472B6 100%);
+  --button-gradient-hover: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-inter);
 }
 
 * {
@@ -17,6 +53,7 @@
 }
 
 html {
+  min-height: 100%;
   color-scheme: light;
 }
 
@@ -25,62 +62,26 @@ html.dark {
 }
 
 body {
-  background: linear-gradient(135deg, #fff1f7 0%, #f5d0fe 42%, #ccfbf1 100%);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  min-height: 100%;
+  margin: 0;
+  background: linear-gradient(180deg, var(--bg-gradient-from) 0%, var(--bg-gradient-to) 100%);
+  color: var(--text-primary);
+  font-family: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition-property: background-color, border-color, color, fill, stroke, background;
+  transition-duration: 200ms;
 }
 
 html.dark body {
-  background: linear-gradient(135deg, #020617 0%, #111827 48%, #0f172a 100%);
+  background: var(--bg);
 }
 
-.party-blob {
-  pointer-events: none;
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(56px);
-  opacity: 0.52;
-  animation: partyFloat 14s ease-in-out infinite;
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
-html.dark .party-blob {
-  opacity: 0.22;
-}
-
-.party-blob-one {
-  top: 4%;
-  left: -6%;
-  height: 20rem;
-  width: 20rem;
-  background: rgba(236, 72, 153, 0.35);
-  animation-delay: 0s;
-}
-
-.party-blob-two {
-  right: -5%;
-  top: 18%;
-  height: 24rem;
-  width: 24rem;
-  background: rgba(139, 92, 246, 0.32);
-  animation-delay: -4s;
-}
-
-.party-blob-three {
-  bottom: -6%;
-  left: 24%;
-  height: 22rem;
-  width: 22rem;
-  background: rgba(20, 184, 166, 0.28);
-  animation-delay: -8s;
-}
-
-@keyframes partyFloat {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(0, -18px, 0) scale(1.04);
-  }
+::selection {
+  background: color-mix(in srgb, var(--accent-primary) 24%, transparent);
 }

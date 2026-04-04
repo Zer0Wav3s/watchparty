@@ -1,18 +1,19 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Crown, DoorClosed, Loader2, Sparkles } from "lucide-react";
+import { Crown, LogOut, Loader2, PartyPopper } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
-import { PinGate } from "@/components/PinGate";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ToastContainer } from "@/components/Toast";
+import type { ToastMessage } from "@/components/Toast";
 import { UrlInput } from "@/components/UrlInput";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ViewerCount } from "@/components/ViewerCount";
+import { PinGate } from "@/components/PinGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { getPartyKitWebSocketUrl, parseServerMessage, sendPartyMessage } from "@/lib/partykit";
 import type { ServerMessage, VideoType } from "@/lib/types";
 import { isYouTubeUrl, normalizeUrl } from "@/lib/utils";
@@ -22,12 +23,6 @@ const DRIFT_THRESHOLD_SECS = 2;
 
 interface RoomPageProps {
   params: Promise<{ id: string }>;
-}
-
-interface ToastMessage {
-  id: number;
-  message: string;
-  tone?: "default" | "danger";
 }
 
 export default function RoomPage({ params }: RoomPageProps) {
@@ -61,13 +56,13 @@ export default function RoomPage({ params }: RoomPageProps) {
   const [roomEnded, setRoomEnded] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  const addToast = useCallback((message: string, tone: ToastMessage["tone"] = "default") => {
+  const addToast = useCallback((message: string) => {
     const id = Date.now() + Math.random();
-    setToasts((current) => [...current, { id, message, tone }]);
+    setToasts((current) => [...current, { id, message }]);
 
     const timeout = window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
-    }, 2600);
+    }, 3000);
 
     toastTimeoutsRef.current.push(timeout);
   }, []);
@@ -84,7 +79,6 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   useEffect(() => {
     const timeouts = toastTimeoutsRef.current;
-
     return () => {
       timeouts.forEach((timeout) => window.clearTimeout(timeout));
     };
@@ -96,7 +90,6 @@ export default function RoomPage({ params }: RoomPageProps) {
         case "pin-required":
           setNeedsPin(true);
           return;
-
         case "auth-ok":
           setNeedsPin(false);
           setPinError(null);
@@ -104,12 +97,10 @@ export default function RoomPage({ params }: RoomPageProps) {
           setIsHost(message.isHost);
           connectionIdRef.current = message.connectionId;
           return;
-
         case "auth-fail":
           setPinError(message.error);
           setIsSubmittingPin(false);
           return;
-
         case "sync":
           setViewerCount(message.viewers);
           setVideoUrl(message.videoUrl);
@@ -119,38 +110,31 @@ export default function RoomPage({ params }: RoomPageProps) {
           setSeekTo(message.position);
           connectionIdRef.current = message.connectionId;
           return;
-
         case "viewer-count":
           setViewerCount(message.count);
           return;
-
         case "video-change":
           setVideoUrl(message.url);
           setVideoType(message.videoType);
           setIsPlaying(message.isPlaying);
           setSeekTo(message.position);
           return;
-
         case "host-changed":
           setIsHost(message.connectionId === connectionIdRef.current);
           return;
-
         case "play":
           ignoreNextPlayRef.current = true;
           setIsPlaying(true);
           setSeekTo(message.position);
           return;
-
         case "pause":
           ignoreNextPauseRef.current = true;
           setIsPlaying(false);
           setSeekTo(message.position);
           return;
-
         case "seek":
           setSeekTo(message.position);
           return;
-
         case "heartbeat": {
           const drift = Math.abs(positionRef.current - message.position);
           if (drift > DRIFT_THRESHOLD_SECS) {
@@ -158,24 +142,20 @@ export default function RoomPage({ params }: RoomPageProps) {
           }
           return;
         }
-
         case "room-ended":
           setRoomEnded(true);
           setEndingRoom(false);
           setIsPlaying(false);
           setError(null);
-          addToast("This room has ended.", "danger");
+          addToast("This room has ended.");
           return;
-
         case "error":
           setEndingRoom(false);
           setError(message.error);
           return;
-
         case "room-not-found":
           setError("Room not found.");
           return;
-
         default:
           return;
       }
@@ -295,7 +275,6 @@ export default function RoomPage({ params }: RoomPageProps) {
       ignoreNextPlayRef.current = false;
       return;
     }
-
     setIsPlaying(true);
     sendPartyMessage(socketRef.current, { type: "play", position });
   }
@@ -305,7 +284,6 @@ export default function RoomPage({ params }: RoomPageProps) {
       ignoreNextPauseRef.current = false;
       return;
     }
-
     setIsPlaying(false);
     sendPartyMessage(socketRef.current, { type: "pause", position });
   }
@@ -320,9 +298,7 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   function handleEndRoom() {
     const confirmed = window.confirm("End this room for everyone?");
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     setEndingRoom(true);
     const sent = sendPartyMessage(socketRef.current, { type: "end-room" });
@@ -334,164 +310,133 @@ export default function RoomPage({ params }: RoomPageProps) {
   }
 
   return (
-    <main className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-transparent p-4 sm:p-6 lg:p-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.7),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(236,72,153,0.12),transparent_30%),radial-gradient(circle_at_82%_16%,rgba(139,92,246,0.15),transparent_28%),radial-gradient(circle_at_65%_82%,rgba(20,184,166,0.14),transparent_30%)] dark:bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.35),transparent_34%),radial-gradient(circle_at_18%_18%,rgba(236,72,153,0.12),transparent_30%),radial-gradient(circle_at_82%_16%,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_65%_82%,rgba(20,184,166,0.12),transparent_30%)]" />
-      <div className="party-blob party-blob-one opacity-35 dark:opacity-15" />
-      <div className="party-blob party-blob-two opacity-35 dark:opacity-15" />
-      <div className="party-blob party-blob-three opacity-35 dark:opacity-15" />
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
+      className="flex min-h-dvh flex-col"
+    >
+      {/* Toasts */}
+      <ToastContainer toasts={toasts} />
 
-      <AnimatePresence>
-        {toasts.length > 0 ? (
-          <motion.div
-            className="pointer-events-none fixed right-4 top-4 z-[80] flex w-[calc(100%-2rem)] max-w-sm flex-col gap-3 sm:right-6 sm:top-6"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-          >
-            {toasts.map((toast) => (
-              <motion.div
-                key={toast.id}
-                initial={{ opacity: 0, y: -10, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -12, scale: 0.96 }}
-                transition={{ duration: 0.2 }}
-                className={`rounded-[24px] border px-4 py-3 text-sm font-semibold shadow-[0_24px_60px_-35px_rgba(15,23,42,0.85)] backdrop-blur-xl ${
-                  toast.tone === "danger"
-                    ? "border-rose-200 bg-rose-50/90 text-rose-700 dark:border-rose-400/20 dark:bg-rose-500/12 dark:text-rose-100"
-                    : "border-white/80 bg-white/88 text-slate-700 dark:border-white/10 dark:bg-slate-950/75 dark:text-white/85"
-                }`}
-              >
-                {toast.message}
-              </motion.div>
-            ))}
-          </motion.div>
+      {/* Header bar */}
+      <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-6">
+        {/* Left section */}
+        <div className="flex items-center gap-4">
+          <Badge variant="secondary" className="text-sm">
+            {roomId}
+          </Badge>
+          <ViewerCount count={viewerCount} />
+        </div>
+
+        {/* Right section */}
+        <div className="flex items-center gap-3">
+          {isHost ? (
+            <Badge variant="amber" className="gap-1.5 px-2.5 py-1 text-xs font-semibold">
+              <Crown className="h-3.5 w-3.5" />
+              Host
+            </Badge>
+          ) : null}
+
+          {isHost ? (
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={endingRoom || roomEnded}
+              onClick={handleEndRoom}
+              className="h-8 gap-1.5 rounded-lg px-3 text-sm font-semibold"
+            >
+              {endingRoom ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <LogOut className="h-3.5 w-3.5" />
+              )}
+              End Room
+            </Button>
+          ) : null}
+
+          <ThemeToggle />
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="flex flex-1 flex-col items-center px-6 py-6 md:px-12">
+        {/* PIN gate overlay */}
+        {needsPin ? (
+          <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} />
         ) : null}
-      </AnimatePresence>
 
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-6xl"
-      >
-        <Card className="overflow-hidden border-white/70 bg-white/88 backdrop-blur-2xl dark:border-white/10 dark:bg-[#05070d]/86">
-          <div className="flex flex-col gap-5 border-b border-fuchsia-500/10 p-5 sm:p-6 md:flex-row md:items-center md:justify-between md:px-8 dark:border-white/8">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="space-y-1">
-                <p className="text-xs font-black tracking-[0.18em] text-fuchsia-600 uppercase dark:text-cyan-300/80">Watch room</p>
-                <h1 className="font-mono text-xl font-black tracking-tight text-slate-900 sm:text-2xl dark:text-white">{roomId}</h1>
-              </div>
-              {isHost ? (
-                <Badge variant="amber" className="gap-2 px-4 py-2 text-xs">
-                  <Crown className="h-3.5 w-3.5" />
-                  Host
-                </Badge>
-              ) : null}
-              {isConnecting ? (
-                <Badge variant="outline" className="gap-2 px-4 py-2 text-xs">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Connecting
-                </Badge>
-              ) : null}
-            </div>
+        {/* Room ended overlay */}
+        <AnimatePresence>
+          {roomEnded ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center"
+              >
+                <PartyPopper className="mx-auto h-12 w-12 text-[var(--accent-primary)]" />
+                <h2 className="mt-4 text-xl font-semibold text-[var(--text-primary)]">
+                  This room has ended
+                </h2>
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                  Redirecting to home...
+                </p>
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
-            <div className="flex flex-wrap items-center gap-3 md:justify-end">
-              <ViewerCount count={viewerCount} />
-              <ThemeToggle />
-              {isHost ? (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  disabled={endingRoom || roomEnded}
-                  onClick={handleEndRoom}
-                  className="h-11 rounded-full px-5 text-sm font-black"
-                >
-                  {endingRoom ? <Loader2 className="h-4 w-4 animate-spin" /> : <DoorClosed className="h-4 w-4" />}
-                  End room
-                </Button>
-              ) : null}
-            </div>
+        {/* Video area */}
+        <div className="w-full max-w-[960px]">
+          <div className="aspect-video w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
+            <VideoPlayer
+              url={videoUrl}
+              type={videoType}
+              isPlaying={isPlaying}
+              seekTo={seekTo}
+              seekThreshold={DRIFT_THRESHOLD_SECS}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              onSeek={handleSeek}
+              onTimeUpdate={handleTimeUpdate}
+            />
           </div>
 
-          <CardContent className="relative p-4 md:p-8">
-            {needsPin ? <div className="absolute inset-0 z-40 bg-white/60 backdrop-blur-md dark:bg-black/60" /> : null}
-            {needsPin ? <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} /> : null}
+          {/* URL input */}
+          <div className="mt-4">
+            <UrlInput
+              disabled={needsPin || isConnecting || extracting || roomEnded}
+              isHost={isHost}
+              onSubmit={handleVideoSubmit}
+            />
+          </div>
 
-            <AnimatePresence>
-              {roomEnded ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-30 flex items-center justify-center rounded-[28px] bg-white/80 px-6 text-center backdrop-blur-md dark:bg-slate-950/82"
-                >
-                  <div className="max-w-md space-y-4">
-                    <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-full bg-rose-100 text-rose-500 dark:bg-rose-500/12 dark:text-rose-200">
-                      <DoorClosed className="h-8 w-8" />
-                    </div>
-                    <div className="space-y-2">
-                      <h2 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">This room has ended</h2>
-                      <p className="text-base font-medium leading-7 text-slate-600 dark:text-white/65">
-                        The host closed the party. Sending you back home in a couple seconds.
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ) : null}
-            </AnimatePresence>
+          {/* Error display */}
+          {error ? (
+            <p className="mt-4 rounded-xl border border-[var(--danger)] bg-[var(--danger)]/10 px-4 py-3 text-sm font-medium text-[var(--danger)]">
+              {error}
+            </p>
+          ) : null}
 
-            <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 md:gap-8">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold tracking-[0.12em] text-slate-500 uppercase dark:text-white/50">
-                    Queue the night
-                  </p>
-                  <p className="text-base font-medium text-slate-600 dark:text-white/65">
-                    Hosts can drop the next link. Everyone else just shows up and vibes.
-                  </p>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/82 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm dark:border-white/10 dark:bg-white/6 dark:text-white/80">
-                  <Sparkles className="h-4 w-4 text-fuchsia-500 dark:text-cyan-300" />
-                  Playback stays synced across the room
-                </div>
-              </div>
-
-              <UrlInput disabled={needsPin || isConnecting || extracting || roomEnded} isHost={isHost} onSubmit={handleVideoSubmit} />
-
-              {error ? (
-                <p className="rounded-[24px] border border-rose-200 bg-rose-50 px-6 py-4 text-sm font-medium text-rose-600 dark:border-rose-400/20 dark:bg-rose-500/10 dark:text-rose-200">
-                  {error}
-                </p>
-              ) : null}
-
-              {extracting ? (
-                <div className="flex items-center gap-3 rounded-[24px] border border-fuchsia-200 bg-fuchsia-50/85 px-6 py-4 dark:border-cyan-400/20 dark:bg-cyan-400/10">
-                  <span className="relative flex h-3 w-3">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 opacity-75 dark:bg-cyan-300" />
-                    <span className="relative inline-flex h-3 w-3 rounded-full bg-fuchsia-500 dark:bg-cyan-300" />
-                  </span>
-                  <p className="text-sm font-bold tracking-wide text-fuchsia-700 dark:text-cyan-100">Finding the best stream source...</p>
-                </div>
-              ) : null}
-
-              <div className="group relative aspect-video w-full overflow-hidden rounded-[32px] border border-black/5 bg-black shadow-[0_40px_100px_-42px_rgba(15,23,42,0.9)] ring-1 ring-black/10 dark:border-white/8 dark:ring-white/10">
-                <VideoPlayer
-                  url={videoUrl}
-                  type={videoType}
-                  isPlaying={isPlaying}
-                  seekTo={seekTo}
-                  seekThreshold={DRIFT_THRESHOLD_SECS}
-                  onPlay={handlePlay}
-                  onPause={handlePause}
-                  onSeek={handleSeek}
-                  onTimeUpdate={handleTimeUpdate}
-                />
-              </div>
+          {/* Extracting indicator */}
+          {extracting ? (
+            <div className="mt-4 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+              <Loader2 className="h-4 w-4 animate-spin text-[var(--accent-primary)]" />
+              <p className="text-sm text-[var(--text-secondary)]">
+                Finding the best stream source...
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </main>
+          ) : null}
+        </div>
+      </div>
+    </motion.main>
   );
 }
