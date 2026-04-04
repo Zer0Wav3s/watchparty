@@ -7,6 +7,7 @@ interface HlsPlayerProps {
   src: string;
   isPlaying: boolean;
   seekTo: number | null;
+  seekThreshold?: number;
   onPlay: (position: number) => void;
   onPause: (position: number) => void;
   onSeek: (position: number) => void;
@@ -17,12 +18,14 @@ export function HlsPlayer({
   src,
   isPlaying,
   seekTo,
+  seekThreshold = 2,
   onPlay,
   onPause,
   onSeek,
   onTimeUpdate,
 }: HlsPlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const isApplyingSyncSeekRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -64,10 +67,11 @@ export function HlsPlayer({
       return;
     }
 
-    if (Math.abs(video.currentTime - seekTo) > 0.25) {
+    if (Math.abs(video.currentTime - seekTo) > seekThreshold) {
+      isApplyingSyncSeekRef.current = true;
       video.currentTime = seekTo;
     }
-  }, [seekTo]);
+  }, [seekThreshold, seekTo]);
 
   return (
     <video
@@ -77,7 +81,14 @@ export function HlsPlayer({
       className="h-full w-full rounded-[24px] bg-black"
       onPlay={() => onPlay(videoRef.current?.currentTime ?? 0)}
       onPause={() => onPause(videoRef.current?.currentTime ?? 0)}
-      onSeeked={() => onSeek(videoRef.current?.currentTime ?? 0)}
+      onSeeked={() => {
+        if (isApplyingSyncSeekRef.current) {
+          isApplyingSyncSeekRef.current = false;
+          return;
+        }
+
+        onSeek(videoRef.current?.currentTime ?? 0);
+      }}
       onTimeUpdate={() => onTimeUpdate?.(videoRef.current?.currentTime ?? 0)}
     />
   );

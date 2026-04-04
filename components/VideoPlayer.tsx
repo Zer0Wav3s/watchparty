@@ -1,7 +1,7 @@
 "use client";
 
-import ReactPlayer from "react-player";
 import { useEffect, useRef } from "react";
+import ReactPlayer from "react-player";
 
 import type { VideoType } from "@/lib/types";
 
@@ -12,6 +12,7 @@ interface VideoPlayerProps {
   type: VideoType | null;
   isPlaying: boolean;
   seekTo: number | null;
+  seekThreshold?: number;
   onPlay: (position: number) => void;
   onPause: (position: number) => void;
   onSeek: (position: number) => void;
@@ -23,12 +24,14 @@ export function VideoPlayer({
   type,
   isPlaying,
   seekTo,
+  seekThreshold = 2,
   onPlay,
   onPause,
   onSeek,
   onTimeUpdate,
 }: VideoPlayerProps) {
   const playerRef = useRef<HTMLVideoElement | null>(null);
+  const isApplyingSyncSeekRef = useRef(false);
 
   useEffect(() => {
     const player = playerRef.current;
@@ -36,10 +39,11 @@ export function VideoPlayer({
       return;
     }
 
-    if (Math.abs((player.currentTime ?? 0) - seekTo) > 0.25) {
+    if (Math.abs((player.currentTime ?? 0) - seekTo) > seekThreshold) {
+      isApplyingSyncSeekRef.current = true;
       player.currentTime = seekTo;
     }
-  }, [seekTo]);
+  }, [seekThreshold, seekTo]);
 
   if (!url || !type) {
     return (
@@ -65,7 +69,14 @@ export function VideoPlayer({
           playsInline
           onPlay={() => onPlay(playerRef.current?.currentTime ?? 0)}
           onPause={() => onPause(playerRef.current?.currentTime ?? 0)}
-          onSeeked={() => onSeek(playerRef.current?.currentTime ?? 0)}
+          onSeeked={() => {
+            if (isApplyingSyncSeekRef.current) {
+              isApplyingSyncSeekRef.current = false;
+              return;
+            }
+
+            onSeek(playerRef.current?.currentTime ?? 0);
+          }}
           onTimeUpdate={() => onTimeUpdate?.(playerRef.current?.currentTime ?? 0)}
         />
       </div>
@@ -78,6 +89,7 @@ export function VideoPlayer({
         src={url}
         isPlaying={isPlaying}
         seekTo={seekTo}
+        seekThreshold={seekThreshold}
         onPlay={onPlay}
         onPause={onPause}
         onSeek={onSeek}
