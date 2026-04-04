@@ -48,6 +48,7 @@ export default class RoomServer implements Server {
     const hostToken = requestUrl.searchParams.get("hostToken");
     const initPin = requestUrl.searchParams.get("initPin");
 
+    let isRoomCreator = false;
     if (!this.state.roomId) {
       this.state = {
         roomId: this.room.id,
@@ -61,12 +62,14 @@ export default class RoomServer implements Server {
         lastUpdateAt: Date.now(),
         viewers: new Map<string, ViewerState>(),
       };
+      isRoomCreator = true;
       await this.room.storage.delete(ROOM_ENDED_KEY);
       await this.persistState();
     }
 
     const requiresPin = Boolean(this.state.pin);
-    const autoAuthed = !requiresPin || (!!hostToken && hostToken === this.state.hostToken);
+    // Room creator is always auto-authenticated — they just set the PIN
+    const autoAuthed = isRoomCreator || !requiresPin || (!!hostToken && hostToken === this.state.hostToken);
 
     conn.setState({ authed: autoAuthed });
 
