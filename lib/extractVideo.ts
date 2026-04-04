@@ -108,11 +108,31 @@ function extractIframeSrcs(html: string): string[] {
 export async function extractVideo(url: string): Promise<ExtractResult | ExtractError> {
   try {
     const lowerUrl = url.toLowerCase();
-    if (lowerUrl.includes(".m3u8")) {
+    // Detect direct video URLs by path patterns (covers .m3u8, /m3u8/, .mp4, /mp4/)
+    if (lowerUrl.includes(".m3u8") || lowerUrl.includes("/m3u8/") || lowerUrl.includes("m3u8-play")) {
       return { src: url, type: "hls" };
     }
-    if (lowerUrl.includes(".mp4")) {
+    if (lowerUrl.includes(".mp4") || lowerUrl.includes("/mp4/")) {
       return { src: url, type: "mp4" };
+    }
+
+    // Try a HEAD request first — if it returns a video content-type, use it directly
+    try {
+      const headResp = await fetch(url, {
+        method: "HEAD",
+        headers: { ...BROWSER_HEADERS, Referer: new URL(url).origin + "/" },
+        redirect: "follow",
+        signal: AbortSignal.timeout(6_000),
+      });
+      const ct = headResp.headers.get("content-type")?.toLowerCase() ?? "";
+      if (ct.includes("mpegurl") || ct.includes("x-mpegurl")) {
+        return { src: url, type: "hls" };
+      }
+      if (ct.includes("video/mp4") || ct.includes("video/mp2t")) {
+        return { src: url, type: "mp4" };
+      }
+    } catch {
+      // HEAD failed — continue to HTML extraction
     }
 
     let html: string;
