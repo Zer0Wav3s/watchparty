@@ -184,6 +184,7 @@ export default function HomePage() {
         </div>
       </div>
 
+      <div className="mt-8 sm:mt-0" />
       <Footer />
     </motion.main>
   );

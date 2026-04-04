@@ -493,6 +493,7 @@ export default function RoomPage({ params }: RoomPageProps) {
           ) : null}
         </div>
       </div>
+      <div className="mt-8 sm:mt-0" />
       <Footer />
     </motion.main>
   );
