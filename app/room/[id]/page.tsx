@@ -435,7 +435,7 @@ export default function RoomPage({ params }: RoomPageProps) {
 
           <div ref={videoContainerRef} className="w-full">
             <div
-              className={`aspect-video w-full overflow-hidden border border-[var(--border)] bg-[var(--surface)] ${
+              className={`relative aspect-video w-full overflow-hidden border border-[var(--border)] bg-[var(--surface)] ${
                 videoUrl && videoType && videoType !== "youtube" ? "rounded-t-xl rounded-b-none" : "rounded-xl"
               }`}
             >
@@ -451,6 +451,15 @@ export default function RoomPage({ params }: RoomPageProps) {
                 onSeek={handleSeek}
                 onTimeUpdate={handleTimeUpdate}
               />
+              {/* Click-to-pause overlay (non-YouTube only) */}
+              {videoUrl && videoType && videoType !== "youtube" ? (
+                <button
+                  type="button"
+                  className="absolute inset-0 z-10 cursor-pointer bg-transparent"
+                  onClick={() => { if (isPlaying) handleLocalPause(); else handleLocalPlay(); }}
+                  aria-label={isPlaying ? "Pause video" : "Play video"}
+                />
+              ) : null}
             </div>
 
             {videoUrl && videoType && videoType !== "youtube" ? (

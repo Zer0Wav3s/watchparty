@@ -5,12 +5,14 @@ import {
   Minimize,
   Pause,
   Play,
+  Radio,
   Volume2,
   VolumeX,
 } from "lucide-react";
 import {
   type ChangeEvent,
   type RefObject,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -55,6 +57,7 @@ export function MediaControls({
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLive, setIsLive] = useState(false);
   const lastVolumeRef = useRef(1);
 
   useEffect(() => {
@@ -64,9 +67,12 @@ export function MediaControls({
       const video = videoRef.current;
       if (video) {
         setCurrentTime(video.currentTime || 0);
-        setDuration(video.duration || 0);
+        const dur = video.duration || 0;
+        setDuration(dur);
         setVolume(video.volume);
         setIsMuted(video.muted || video.volume === 0);
+        // Detect livestream: duration is Infinity or very large
+        setIsLive(!Number.isFinite(dur) || dur > 86400);
       }
 
       frameId = window.requestAnimationFrame(syncState);
@@ -93,9 +99,73 @@ export function MediaControls({
   }, [containerRef]);
 
   const displayTime = useMemo(
-    () => `${formatTime(currentTime)} / ${formatTime(duration)}`,
-    [currentTime, duration],
+    () => isLive ? "LIVE" : `${formatTime(currentTime)} / ${formatTime(duration)}`,
+    [currentTime, duration, isLive],
   );
+
+  const handleJumpToLive = useCallback(() => {
+    const video = videoRef.current;
+    if (video && isLive && Number.isFinite(video.seekable.end(video.seekable.length - 1))) {
+      const liveEdge = video.seekable.end(video.seekable.length - 1);
+      onSeek(liveEdge);
+    }
+  }, [videoRef, isLive, onSeek]);
+
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if user is typing in an input
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      switch (e.key) {
+        case " ":
+        case "k":
+          e.preventDefault();
+          if (isPlaying) onPause(); else onPlay();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          if (!isLive) onSeek(Math.max(0, video.currentTime - 5));
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          if (!isLive) onSeek(Math.min(video.duration || 0, video.currentTime + 5));
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          video.volume = Math.min(1, video.volume + 0.1);
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          video.volume = Math.max(0, video.volume - 0.1);
+          break;
+        case "m":
+          e.preventDefault();
+          handleToggleMute();
+          break;
+        case "f":
+          e.preventDefault();
+          void handleToggleFullscreen();
+          break;
+        case "j":
+          e.preventDefault();
+          if (!isLive) onSeek(Math.max(0, video.currentTime - 10));
+          break;
+        case "l":
+          e.preventDefault();
+          if (!isLive) onSeek(Math.min(video.duration || 0, video.currentTime + 10));
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoRef, isPlaying, isLive, onPlay, onPause, onSeek]);
 
   function handleTogglePlayback() {
     if (isPlaying) {
@@ -169,23 +239,37 @@ export function MediaControls({
         {isPlaying ? <Pause size={20} /> : <Play size={20} />}
       </Button>
 
-      <span className="font-mono text-xs text-[var(--text-secondary)] sm:text-sm">
-        {displayTime}
-      </span>
+      {isLive ? (
+        <button
+          type="button"
+          onClick={handleJumpToLive}
+          className="flex cursor-pointer items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-500 transition-opacity hover:opacity-80"
+          aria-label="Jump to live"
+        >
+          <Radio size={14} className="animate-pulse" />
+          LIVE
+        </button>
+      ) : (
+        <>
+          <span className="font-mono text-xs text-[var(--text-secondary)] sm:text-sm">
+            {displayTime}
+          </span>
 
-      <input
-        type="range"
-        min={0}
-        max={duration || 0}
-        step={0.1}
-        value={Math.min(currentTime, duration || 0)}
-        onChange={handleSeekChange}
-        className={cn(
-          "h-1 min-w-[140px] flex-1 cursor-pointer accent-[var(--accent-primary)]",
-          "rounded-full",
-        )}
-        aria-label="Seek video"
-      />
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={Math.min(currentTime, duration || 0)}
+            onChange={handleSeekChange}
+            className={cn(
+              "h-1 min-w-[140px] flex-1 cursor-pointer accent-[var(--accent-primary)]",
+              "rounded-full",
+            )}
+            aria-label="Seek video"
+          />
+        </>
+      )}
 
       <div className="flex items-center gap-2">
         <button
