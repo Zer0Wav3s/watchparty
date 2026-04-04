@@ -157,19 +157,19 @@ export function MediaControls({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-b-xl border border-t-0 border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+    <div className="flex flex-wrap items-center gap-2 rounded-b-xl border border-t-0 border-[var(--border)] bg-[var(--surface)] px-3 py-2 sm:gap-3 sm:px-4 sm:py-3">
       <Button
         type="button"
         variant={isPlaying ? "default" : "outline"}
         size="sm"
         onClick={handleTogglePlayback}
-        className="h-10 min-w-10 cursor-pointer rounded-full px-3 hover:opacity-80"
+        className="h-8 min-w-8 cursor-pointer rounded-full px-2 hover:opacity-80 sm:h-10 sm:min-w-10 sm:px-3"
         aria-label={isPlaying ? "Pause video" : "Play video"}
       >
         {isPlaying ? <Pause size={20} /> : <Play size={20} />}
       </Button>
 
-      <span className="font-mono text-sm text-[var(--text-secondary)]">
+      <span className="font-mono text-xs text-[var(--text-secondary)] sm:text-sm">
         {displayTime}
       </span>
 
@@ -204,7 +204,7 @@ export function MediaControls({
           step={0.05}
           value={isMuted ? 0 : volume}
           onChange={handleVolumeChange}
-          className="h-1 w-20 cursor-pointer accent-[var(--accent-primary)] rounded-full"
+          className="hidden h-1 w-20 cursor-pointer accent-[var(--accent-primary)] rounded-full sm:block"
           aria-label="Video volume"
         />
       </div>

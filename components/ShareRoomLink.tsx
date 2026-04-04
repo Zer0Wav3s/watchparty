@@ -36,8 +36,8 @@ export function ShareRoomLink({ roomId }: ShareRoomLinkProps) {
   }, [roomUrl]);
 
   return (
-    <div className="flex items-center justify-center px-4 mt-6 mb-6">
-      <span className="mr-3 text-sm font-medium text-[var(--text-muted)]">
+    <div className="flex flex-col items-center justify-center gap-2 px-4 py-4 sm:flex-row sm:gap-3">
+      <span className="text-sm font-medium text-[var(--text-muted)]">
         Share Room:
       </span>
       <motion.button

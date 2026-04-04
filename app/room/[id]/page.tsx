@@ -344,24 +344,20 @@ export default function RoomPage({ params }: RoomPageProps) {
       <ToastContainer toasts={toasts} />
 
       {/* Header bar */}
-      <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-6">
-        {/* Left — Logo */}
-        <div className="flex items-center">
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-3 sm:px-6">
+        {/* Left — Logo + Room ID */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <WatchPartyLogo size={32} linkTo="/" />
-        </div>
-
-        {/* Center — Room ID + Viewers */}
-        <div className="flex items-center gap-4">
-          <Badge variant="secondary" className="text-sm">
+          <Badge variant="secondary" className="hidden text-sm sm:inline-flex">
             {roomId}
           </Badge>
           <ViewerCount count={viewerCount} />
         </div>
 
         {/* Right — Host badge + End Room + Theme Toggle */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {isHost ? (
-            <Badge variant="amber" className="gap-1.5 px-2.5 py-1 text-xs font-semibold">
+            <Badge variant="amber" className="hidden gap-1.5 px-2.5 py-1 text-xs font-semibold sm:inline-flex">
               <Crown className="h-3.5 w-3.5" />
               Host
             </Badge>
@@ -374,14 +370,14 @@ export default function RoomPage({ params }: RoomPageProps) {
               size="sm"
               disabled={endingRoom || roomEnded}
               onClick={handleEndRoom}
-              className="h-8 gap-1.5 rounded-lg px-3 text-sm font-semibold"
+              className="h-8 gap-1.5 rounded-lg px-2 text-xs font-semibold sm:px-3 sm:text-sm"
             >
               {endingRoom ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <LogOut className="h-3.5 w-3.5" />
               )}
-              End Room
+              <span className="hidden sm:inline">End Room</span>
             </Button>
           ) : null}
 
@@ -393,7 +389,7 @@ export default function RoomPage({ params }: RoomPageProps) {
       <ShareRoomLink roomId={roomId} />
 
       {/* Content */}
-      <div className="flex flex-1 flex-col items-center px-6 py-6 md:px-12">
+      <div className="flex flex-1 flex-col items-center px-3 py-4 sm:px-6 sm:py-6 md:px-12">
         {/* PIN gate overlay */}
         {needsPin ? (
           <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} />
