@@ -14,6 +14,17 @@ interface HlsPlayerProps {
   onTimeUpdate?: (position: number) => void;
 }
 
+function proxyUrl(src: string): string {
+  // Route external HLS streams through our CORS proxy
+  try {
+    const url = new URL(src, window.location.origin);
+    if (url.origin === window.location.origin) return src;
+    return `/api/proxy?url=${encodeURIComponent(src)}`;
+  } catch {
+    return src;
+  }
+}
+
 export function HlsPlayer({
   src,
   isPlaying,
@@ -33,23 +44,16 @@ export function HlsPlayer({
       return;
     }
 
+    const proxied = proxyUrl(src);
+
     if (Hls.isSupported()) {
-      const hls = new Hls({
-        xhrSetup: (xhr) => {
-          // Some CDNs require a Referer to serve segments
-          try {
-            xhr.setRequestHeader("Referer", new URL(src).origin + "/");
-          } catch {
-            // CORS may block this — that's fine, the browser handles it
-          }
-        },
-      });
-      hls.loadSource(src);
+      const hls = new Hls();
+      hls.loadSource(proxied);
       hls.attachMedia(video);
 
       hls.on(Hls.Events.ERROR, (_event, data) => {
         if (data.fatal) {
-          // If HLS fails, try direct playback as fallback
+          // If HLS fails via proxy, try direct playback as last resort
           video.src = src;
         }
       });
@@ -60,7 +64,7 @@ export function HlsPlayer({
     }
 
     // Safari has native HLS support
-    video.src = src;
+    video.src = proxied;
     return undefined;
   }, [src]);
 
