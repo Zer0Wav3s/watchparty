@@ -8,7 +8,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        "flex h-10 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-base text-white shadow-xs outline-none transition placeholder:text-zinc-500 focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:border-cyan-500/50 disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-10 w-full rounded-2xl border border-fuchsia-200 bg-white px-4 py-2 text-base text-slate-800 shadow-[0_16px_32px_-28px_rgba(168,85,247,0.8)] outline-none transition placeholder:text-slate-400 focus-visible:border-fuchsia-400 focus-visible:ring-4 focus-visible:ring-fuchsia-200/70 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...props}

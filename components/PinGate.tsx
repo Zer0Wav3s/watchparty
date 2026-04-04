@@ -1,5 +1,6 @@
 "use client";
 
+import { LockKeyhole, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -28,36 +29,38 @@ export function PinGate({ onSubmit, error, isLoading }: PinGateProps) {
 
   return (
     <Dialog open>
-      <DialogContent showClose={false} className="z-50 w-11/12 max-w-sm sm:max-w-md">
-        <DialogHeader className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-cyan-500/10 ring-1 ring-cyan-500/20">
-            <svg className="h-8 w-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
+      <DialogContent showClose={false} className="z-[100] w-11/12 max-w-sm rounded-[36px] border-fuchsia-200 bg-white/96 p-8 shadow-[0_30px_80px_-28px_rgba(168,85,247,0.55)] sm:max-w-md">
+        <DialogHeader className="space-y-5 text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[28px] bg-[linear-gradient(135deg,#fdf2f8_0%,#f5d0fe_45%,#ccfbf1_100%)] shadow-inner">
+            <LockKeyhole className="h-9 w-9 text-fuchsia-600" />
           </div>
-          <DialogTitle className="text-center">Restricted access.</DialogTitle>
-          <DialogDescription className="text-center text-base">
-            This session is protected by a PIN.
-          </DialogDescription>
+          <div className="space-y-2">
+            <DialogTitle className="text-3xl font-black tracking-tight text-slate-800">VIP access only</DialogTitle>
+            <DialogDescription className="text-base font-medium text-slate-600">
+              This room is PIN protected. Drop the code and get back to the party.
+            </DialogDescription>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-6">
-          <div className="relative group">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+          <div className="relative">
+            <LockKeyhole className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-fuchsia-400" />
             <Input
               value={pin}
               onChange={(event) => setPin(event.target.value)}
               placeholder="Enter PIN"
               type="password"
-              className="h-14 w-full rounded-2xl bg-black/50 text-center text-xl tracking-widest text-zinc-100 outline-none transition-colors"
+              className="h-16 rounded-[28px] border-fuchsia-200 bg-white pl-14 pr-5 text-lg text-slate-800 placeholder:text-slate-400"
             />
           </div>
 
-          <Button type="submit" disabled={isLoading} size="lg" className="w-full text-base font-bold tracking-wide">
-            {isLoading ? "Authenticating..." : "Join session"}
+          <Button type="submit" disabled={isLoading} size="lg" className="w-full rounded-[28px] text-lg font-black tracking-wide">
+            <Sparkles className="h-5 w-5" />
+            {isLoading ? "Checking the guest list..." : "Join room"}
           </Button>
 
           {error ? (
-            <p className="animate-in fade-in slide-in-from-bottom-2 text-center text-sm font-medium text-rose-400">
+            <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm font-bold text-rose-600">
               {error}
             </p>
           ) : null}

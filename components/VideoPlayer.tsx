@@ -1,5 +1,6 @@
 "use client";
 
+import { Pause, Play, Sparkles } from "lucide-react";
 import { useEffect, useRef } from "react";
 import ReactPlayer from "react-player";
 
@@ -47,16 +48,20 @@ export function VideoPlayer({
 
   if (!url || !type) {
     return (
-      <div className="flex h-full min-h-[320px] w-full items-center justify-center bg-black/40 text-center backdrop-blur-sm sm:min-h-[400px]">
-        <div className="flex max-w-sm flex-col items-center gap-6 px-8 py-10 opacity-70 transition-opacity hover:opacity-100">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
-            <svg className="h-8 w-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
+      <div className="flex h-full min-h-[320px] w-full items-center justify-center bg-[radial-gradient(circle_at_top,#312e81_0%,#111827_58%,#020617_100%)] text-center sm:min-h-[400px]">
+        <div className="flex max-w-md flex-col items-center gap-6 px-8 py-12 text-white">
+          <div className="flex h-24 w-24 items-center justify-center rounded-[30px] bg-white/10 shadow-lg shadow-fuchsia-500/20 ring-1 ring-white/20">
+            <Sparkles className="h-10 w-10 text-pink-300" />
           </div>
           <div className="space-y-3">
-            <p className="text-xl font-bold tracking-tight text-white/90">Awaiting signal</p>
-            <p className="text-base font-medium text-zinc-500">The channel admin must provide a source to begin the session.</p>
+            <p className="text-2xl font-black tracking-tight">Waiting for the first drop</p>
+            <p className="text-base font-medium text-white/70">
+              The host can paste a video link above and everyone in the room will stay in sync.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-4 py-2 text-sm font-semibold text-white/80">
+            {isPlaying ? <Play className="h-4 w-4 fill-current" /> : <Pause className="h-4 w-4" />}
+            Ready when you are
           </div>
         </div>
       </div>
