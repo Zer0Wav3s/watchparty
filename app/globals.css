@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  --background: #fff1f7;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -17,11 +17,43 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
+  background: linear-gradient(135deg, #fff1f7 0%, #f5d0fe 42%, #ccfbf1 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.party-blob {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(48px);
+  opacity: 0.55;
+}
+
+.party-blob-one {
+  top: 4%;
+  left: -6%;
+  height: 20rem;
+  width: 20rem;
+  background: rgba(236, 72, 153, 0.35);
+}
+
+.party-blob-two {
+  right: -5%;
+  top: 18%;
+  height: 24rem;
+  width: 24rem;
+  background: rgba(139, 92, 246, 0.32);
+}
+
+.party-blob-three {
+  bottom: -6%;
+  left: 24%;
+  height: 22rem;
+  width: 22rem;
+  background: rgba(20, 184, 166, 0.28);
 }
