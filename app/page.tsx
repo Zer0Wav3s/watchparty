@@ -6,16 +6,31 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { WatchPartyLogo } from "@/components/WatchPartyLogo";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 const cardEase = [0.16, 1, 0.3, 1] as const;
 
 const features = [
-  { icon: Zap, label: "Instant sync" },
-  { icon: Shield, label: "PIN protection" },
-  { icon: MonitorPlay, label: "YouTube & HLS" },
+  {
+    icon: Zap,
+    title: "Instant Sync",
+    description:
+      "Play, pause, and seek — everyone stays perfectly in sync, no matter where they are.",
+  },
+  {
+    icon: Shield,
+    title: "PIN Protection",
+    description:
+      "Lock your room with an optional PIN so only invited friends can join the party.",
+  },
+  {
+    icon: MonitorPlay,
+    title: "YouTube & HLS",
+    description:
+      "Paste any YouTube link or HLS stream and start watching together instantly.",
+  },
 ] as const;
 
 export default function HomePage() {
@@ -49,7 +64,9 @@ export default function HomePage() {
       router.push(`/room/${data.roomId}`);
     } catch (createError) {
       setError(
-        createError instanceof Error ? createError.message : "Something went wrong",
+        createError instanceof Error
+          ? createError.message
+          : "Something went wrong",
       );
     } finally {
       setIsLoading(false);
@@ -61,87 +78,105 @@ export default function HomePage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="relative flex min-h-dvh items-center justify-center px-6 py-8 md:px-12"
+      className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-16 md:py-24"
     >
-      {/* Theme toggle — absolute top-right */}
-      <div className="absolute top-6 right-6 z-50">
+      {/* Theme toggle — fixed top-right */}
+      <div className="fixed top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
-      <div className="flex w-full max-w-lg flex-col items-center">
-        {/* Main card */}
+      {/* Hero section */}
+      <div className="flex w-full flex-col items-center">
+        {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: cardEase }}
-          className="w-full"
+          className="mb-6"
         >
-          <Card>
-            <CardContent className="space-y-6 p-8">
-              {/* Headline */}
-              <div className="text-center">
-                <h1 className="text-4xl leading-[1.2] font-extrabold text-[var(--text-primary)]">
-                  Watch together, from anywhere.
-                </h1>
-                <p className="mx-auto mt-2 max-w-sm text-lg leading-[1.5] font-normal text-[var(--text-secondary)]">
-                  Create a room, share the link, press play. Everyone stays in sync.
-                </p>
-              </div>
-
-              {/* Form */}
-              <form className="space-y-3" onSubmit={handleCreateRoom}>
-                <div className="relative">
-                  <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
-                  <Input
-                    value={pin}
-                    onChange={(event) => setPin(event.target.value)}
-                    maxLength={12}
-                    placeholder="Room PIN (optional)"
-                    className="h-12 pl-10"
-                  />
-                </div>
-
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                >
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="h-12 w-full rounded-xl text-base font-bold hover:shadow-[0_4px_16px_rgba(139,92,246,0.3)]"
-                  >
-                    <Play className="h-[18px] w-[18px]" />
-                    {isLoading ? "Creating..." : "Create Room"}
-                  </Button>
-                </motion.div>
-
-                {error ? (
-                  <p className="rounded-xl border border-[var(--danger)] bg-[var(--danger)]/10 px-4 py-3 text-center text-sm font-medium text-[var(--danger)]">
-                    {error}
-                  </p>
-                ) : null}
-              </form>
-            </CardContent>
-          </Card>
+          <WatchPartyLogo size={64} />
         </motion.div>
 
-        {/* Feature section */}
-        <div className="mt-8 flex items-center justify-center gap-8">
-          {features.map(({ icon: Icon, label }) => (
-            <div key={label} className="flex items-center gap-2">
-              <Icon className="h-6 w-6 text-[var(--accent-primary)]" />
-              <span className="text-sm font-medium text-[var(--text-secondary)]">
-                {label}
-              </span>
+        {/* Headline */}
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.05, ease: cardEase }}
+          className="text-center text-4xl font-extrabold text-[var(--text-primary)]"
+        >
+          Watch Together, From Anywhere
+        </motion.h1>
+
+        {/* Subheadline */}
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: cardEase }}
+          className="mx-auto mt-4 max-w-md text-center text-lg font-normal text-[var(--text-secondary)]"
+        >
+          Create a room, share the link, press play. Everyone stays in sync.
+        </motion.p>
+
+        {/* PIN Input & Create Room */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15, ease: cardEase }}
+          className="mx-auto mt-10 w-full max-w-sm"
+        >
+          <form onSubmit={handleCreateRoom}>
+            <div className="relative">
+              <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+              <Input
+                value={pin}
+                onChange={(event) => setPin(event.target.value)}
+                maxLength={12}
+                placeholder="Room PIN (optional)"
+                className="h-12 rounded-xl pl-10"
+              />
             </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="mt-4 h-12 w-full rounded-xl text-base font-semibold"
+            >
+              <Play className="h-[18px] w-[18px]" />
+              {isLoading ? "Creating..." : "Create Room"}
+            </Button>
+
+            {error ? (
+              <p className="mt-4 rounded-xl border border-[var(--danger)] bg-[var(--danger)]/10 px-4 py-3 text-center text-sm font-medium text-[var(--danger)]">
+                {error}
+              </p>
+            ) : null}
+          </form>
+        </motion.div>
+
+        {/* Feature Cards */}
+        <div className="mx-auto mt-24 grid w-full max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
+          {features.map(({ icon: Icon, title, description }, index) => (
+            <motion.div
+              key={title}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.2 + index * 0.08,
+                ease: cardEase,
+              }}
+              className="cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-lg"
+            >
+              <Icon className="h-8 w-8 text-[var(--accent-primary)]" />
+              <h3 className="mt-4 mb-2 text-lg font-semibold text-[var(--text-primary)]">
+                {title}
+              </h3>
+              <p className="text-base font-normal leading-relaxed text-[var(--text-secondary)]">
+                {description}
+              </p>
+            </motion.div>
           ))}
         </div>
-
-        {/* Footer */}
-        <p className="mt-8 text-center text-xs text-[var(--text-muted)]">
-          WatchParty
-        </p>
       </div>
     </motion.main>
   );

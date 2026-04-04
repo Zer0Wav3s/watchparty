@@ -5,12 +5,14 @@ import { Crown, LogOut, Loader2, PartyPopper } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
+import { ShareRoomLink } from "@/components/ShareRoomLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ToastContainer } from "@/components/Toast";
 import type { ToastMessage } from "@/components/Toast";
 import { UrlInput } from "@/components/UrlInput";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ViewerCount } from "@/components/ViewerCount";
+import { WatchPartyLogo } from "@/components/WatchPartyLogo";
 import { PinGate } from "@/components/PinGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -321,7 +323,12 @@ export default function RoomPage({ params }: RoomPageProps) {
 
       {/* Header bar */}
       <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-6">
-        {/* Left section */}
+        {/* Left — Logo */}
+        <div className="flex items-center">
+          <WatchPartyLogo size={32} linkTo="/" />
+        </div>
+
+        {/* Center — Room ID + Viewers */}
         <div className="flex items-center gap-4">
           <Badge variant="secondary" className="text-sm">
             {roomId}
@@ -329,7 +336,7 @@ export default function RoomPage({ params }: RoomPageProps) {
           <ViewerCount count={viewerCount} />
         </div>
 
-        {/* Right section */}
+        {/* Right — Host badge + End Room + Theme Toggle */}
         <div className="flex items-center gap-3">
           {isHost ? (
             <Badge variant="amber" className="gap-1.5 px-2.5 py-1 text-xs font-semibold">
@@ -359,6 +366,9 @@ export default function RoomPage({ params }: RoomPageProps) {
           <ThemeToggle />
         </div>
       </header>
+
+      {/* Shareable Room Link */}
+      <ShareRoomLink roomId={roomId} />
 
       {/* Content */}
       <div className="flex flex-1 flex-col items-center px-6 py-6 md:px-12">
