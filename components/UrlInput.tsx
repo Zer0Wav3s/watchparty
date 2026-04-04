@@ -29,13 +29,13 @@ export function UrlInput({ disabled, isHost, onSubmit }: UrlInputProps) {
   return (
     <form className="flex w-full flex-col gap-4 sm:flex-row" onSubmit={handleSubmit}>
       <div className="relative flex-1">
-        <Link2 className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-fuchsia-400" />
+        <Link2 className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-fuchsia-400 dark:text-cyan-400" />
         <Input
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           placeholder={isHost ? "Paste a YouTube, HLS, or direct video link" : "Waiting for the host to choose a video"}
           disabled={disabled || !isHost}
-          className="h-16 rounded-[28px] border-fuchsia-200 bg-white pl-14 pr-5 text-base text-slate-800 placeholder:text-slate-400"
+          className="h-16 rounded-[28px] border-fuchsia-200 dark:border-zinc-800 bg-white dark:bg-black/50 pl-14 pr-5 text-base text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus-visible:ring-fuchsia-400 dark:focus-visible:ring-cyan-400 focus-visible:border-transparent"
         />
       </div>
       <Button
