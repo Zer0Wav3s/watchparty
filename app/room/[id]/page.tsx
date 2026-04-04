@@ -224,40 +224,54 @@ export default function RoomPage({ params }: RoomPageProps) {
   }
 
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
-      <Card className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col bg-slate-950/70 p-4 md:p-6">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-slate-950 p-4 sm:p-6 lg:p-8">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(6,182,212,0.05),transparent_50%)]" />
+      <Card className="relative z-10 flex w-full max-w-6xl flex-col bg-[#050505]">
         {/* Header */}
-        <div className="flex flex-col gap-4 border-b border-white/10 pb-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 border-b border-white/5 p-6 md:flex-row md:items-center md:justify-between md:px-8">
           <div className="flex items-center gap-4">
-            <div>
-              <p className="text-sm text-cyan-200">Room</p>
-              <h1 className="text-2xl font-semibold text-white sm:text-3xl">{roomId}</h1>
+            <div className="flex flex-col">
+              <p className="text-xs font-bold tracking-[0.15em] text-cyan-500/70 uppercase">
+                Session
+              </p>
+              <h1 className="font-mono text-xl font-bold tracking-tight text-white/90 sm:text-2xl">
+                {roomId}
+              </h1>
             </div>
-            {isHost && <Badge variant="amber">Host</Badge>}
+            {isHost && <Badge variant="amber" className="ml-2">Admin</Badge>}
           </div>
           <ViewerCount count={viewerCount} />
         </div>
 
         {/* Body */}
-        <CardContent className="relative mt-6 flex-1 rounded-[28px] border border-dashed border-white/10 bg-black/30 p-4 md:p-6">
+        <CardContent className="relative flex-1 p-4 md:p-8">
+          {needsPin && (
+            <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-md" />
+          )}
           {needsPin && (
             <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} />
           )}
 
-          <div className="space-y-6">
+          <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
             <UrlInput disabled={needsPin || isConnecting || extracting} isHost={isHost} onSubmit={handleVideoSubmit} />
 
             {error && (
-              <p className="rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-200">
+              <p className="animate-in fade-in slide-in-from-top-2 rounded-2xl border border-rose-500/20 bg-rose-500/10 px-6 py-4 text-sm font-medium text-rose-400">
                 {error}
               </p>
             )}
 
             {extracting && (
-              <p className="text-sm text-zinc-400">Extracting video source…</p>
+              <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-6 py-4">
+                <span className="relative flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-cyan-500"></span>
+                </span>
+                <p className="text-sm font-bold tracking-wide text-cyan-400">Negotiating stream source...</p>
+              </div>
             )}
 
-            <div className="aspect-video">
+            <div className="group relative aspect-video w-full overflow-hidden rounded-[32px] border border-white/5 bg-black shadow-2xl ring-1 ring-white/10">
               <VideoPlayer
                 url={videoUrl}
                 type={videoType}
