@@ -1,19 +1,42 @@
-# WatchParty
+<div align="center">
 
-WatchParty is a serverless synced-video app built with Next.js and PartyKit. Create a room, share the link, paste a video URL, and everyone in the room watches together with synchronized playback controls.
+# 🎉 WatchParty
 
-It is designed to be simple to self-host: the Next.js app handles the UI and extraction endpoints, while PartyKit manages per-room real-time state over WebSockets.
+**Watch Together, From Anywhere**
+
+[![Version](https://img.shields.io/badge/Version-0.1.0-8B5CF6?logo=github&logoColor=white)](https://github.com/Zer0Wav3s/watchparty/releases)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.2-black?logo=next.js&logoColor=white)](https://nextjs.org)
+[![PartyKit](https://img.shields.io/badge/PartyKit-Realtime-FF6B6B?logo=cloudflare&logoColor=white)](https://partykit.io)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![License](https://img.shields.io/badge/License-MIT-green?logo=opensourceinitiative&logoColor=white)](LICENSE)
+
+</div>
+
+---
+
+WatchParty is a serverless synced-video app built with Next.js and PartyKit. Create a room, share the link, paste a video URL, and everyone watches together with synchronized playback controls.
+
+![Landing Page](screenshots/landing.png)
+
+![Room View](screenshots/room.png)
 
 ## Features
 
 - **Instant room creation** with shareable room URLs
-- **Private rooms with optional PIN protection**
+- **Private rooms** with optional PIN protection
 - **YouTube support** via `react-player`
 - **Streaming site support** via server-side extraction for `.m3u8` and `.mp4` sources
 - **Synchronized play / pause / seek** across viewers
+- **Keyboard shortcuts** — Space, arrow keys, J/K/L, M, F
+- **Click-to-pause** overlay on non-YouTube videos
+- **Livestream mode** with live edge seeking
+- **Confetti** on room creation 🎉
+- **5 viewers per room** cap
 - **Automatic host promotion** when the current host disconnects
+- **1-hour idle auto-cleanup** via PartyKit alarms
+- **Light/dark theme** toggle, persisted to localStorage
+- **Mobile responsive** design
 - **Serverless real-time architecture** powered by PartyKit Durable Objects
-- **Responsive UI** built with Tailwind CSS and shadcn/ui primitives
 
 ## Tech Stack
 
@@ -24,6 +47,7 @@ It is designed to be simple to self-host: the Next.js app handles the UI and ext
 - **cheerio** — HTML parsing for source extraction
 - **shadcn/ui** — accessible UI primitives
 - **Tailwind CSS** — styling
+- **canvas-confetti** — celebration effects
 
 ## Prerequisites
 
