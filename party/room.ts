@@ -44,7 +44,7 @@ export default class RoomServer implements Party.Server {
     const requestUrl = new URL(ctx.request.url);
     const hostToken = requestUrl.searchParams.get("hostToken");
     const requiresPin = Boolean(this.state.pin);
-    const autoAuthed = !requiresPin || (hostToken && hostToken === this.state.hostToken);
+    const autoAuthed = !requiresPin || (!!hostToken && hostToken === this.state.hostToken);
 
     conn.setState({ authed: autoAuthed });
 
@@ -153,11 +153,11 @@ export default class RoomServer implements Party.Server {
     }
   }
 
-  async onRequest(req: Request) {
+  async onRequest(req: Party.Request) {
     await this.ensureStateLoaded();
 
     if (req.method === "POST") {
-      const body = (await req.json().catch(() => null)) as { pin?: string | null } | null;
+      const body = (await (req as unknown as globalThis.Request).json().catch(() => null)) as { pin?: string | null } | null;
 
       this.state = {
         roomId: this.room.id,
