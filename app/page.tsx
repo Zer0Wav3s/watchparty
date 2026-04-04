@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { WatchPartyLogo } from "@/components/WatchPartyLogo";
 import { Button } from "@/components/ui/button";
+import { fireConfetti } from "@/lib/confetti";
 import { Input } from "@/components/ui/input";
 
 const cardEase = [0.16, 1, 0.3, 1] as const;
@@ -61,6 +62,9 @@ export default function HomePage() {
         sessionStorage.setItem(`watchparty:${data.roomId}:pin`, pin.trim());
       }
 
+      fireConfetti();
+      // Small delay so confetti is visible before navigation
+      await new Promise((r) => setTimeout(r, 400));
       router.push(`/room/${data.roomId}`);
     } catch (createError) {
       setError(

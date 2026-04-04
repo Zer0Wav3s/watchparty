@@ -17,6 +17,7 @@ import { WatchPartyLogo } from "@/components/WatchPartyLogo";
 import { PinGate } from "@/components/PinGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { fireConfetti } from "@/lib/confetti";
 import { getPartyKitWebSocketUrl, parseServerMessage, sendPartyMessage } from "@/lib/partykit";
 import type { ServerMessage, VideoType } from "@/lib/types";
 import { isYouTubeUrl, normalizeUrl } from "@/lib/utils";
@@ -101,6 +102,7 @@ export default function RoomPage({ params }: RoomPageProps) {
           setIsSubmittingPin(false);
           setIsHost(message.isHost);
           connectionIdRef.current = message.connectionId;
+          fireConfetti();
           return;
         case "auth-fail":
           setPinError(message.error);
