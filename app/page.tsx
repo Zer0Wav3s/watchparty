@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function HomePage() {
   const router = useRouter();
@@ -48,21 +49,30 @@ export default function HomePage() {
   }
 
   return (
-    <main className="flex min-h-[100dvh] items-center justify-center bg-slate-950 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(6,182,212,0.15),transparent_50%)]" />
-      <Card className="relative z-10 w-full max-w-2xl">
+    <main className="flex min-h-[100dvh] items-center justify-center bg-transparent px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-500">
+      <div className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(236,72,153,0.15),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top_center,rgba(6,182,212,0.15),transparent_50%)]" />
+      
+      {/* Background Blobs for Landing */}
+      <div className="party-blob party-blob-one" />
+      <div className="party-blob party-blob-two" />
+      <div className="party-blob party-blob-three" />
+
+      <Card className="relative z-10 w-full max-w-2xl bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl">
         <CardHeader className="space-y-4 text-center pb-2">
-          <div className="mx-auto flex w-fit items-center gap-3 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-4 py-1.5 backdrop-blur">
+          <div className="mx-auto flex w-fit items-center gap-3 rounded-full border border-fuchsia-500/20 dark:border-cyan-500/20 bg-fuchsia-500/10 dark:bg-cyan-500/10 px-4 py-1.5 backdrop-blur">
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-500"></span>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 dark:bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-fuchsia-500 dark:bg-cyan-500"></span>
             </span>
-            <span className="text-xs font-bold tracking-[0.15em] text-cyan-400/90 uppercase">
+            <span className="text-xs font-bold tracking-[0.15em] text-fuchsia-600 dark:text-cyan-400/90 uppercase">
               WatchParty MVP
             </span>
           </div>
-          <CardTitle>Synced playback for private viewing.</CardTitle>
-          <CardDescription className="mx-auto max-w-md text-lg">
+          <CardTitle className="text-slate-900 dark:text-slate-50">Synced playback for private viewing.</CardTitle>
+          <CardDescription className="mx-auto max-w-md text-lg text-slate-600 dark:text-slate-400">
             Create a room, share the link, and keep playback perfectly in sync. High-quality HLS and YouTube support.
           </CardDescription>
         </CardHeader>
@@ -70,13 +80,13 @@ export default function HomePage() {
         <CardContent className="flex flex-col items-center pt-4">
           <form className="w-full max-w-sm space-y-4" onSubmit={handleCreateRoom}>
             <label className="block space-y-3 relative group">
-              <span className="text-sm font-semibold tracking-wide text-zinc-400 transition-colors group-focus-within:text-cyan-400">Optional room PIN</span>
+              <span className="text-sm font-semibold tracking-wide text-slate-500 dark:text-zinc-400 transition-colors group-focus-within:text-fuchsia-600 dark:group-focus-within:text-cyan-400">Optional room PIN</span>
               <Input
                 value={pin}
                 onChange={(event) => setPin(event.target.value)}
                 maxLength={12}
                 placeholder="Leave blank for a public room"
-                className="h-14 rounded-2xl bg-black/50 text-base"
+                className="h-14 rounded-2xl bg-white/50 dark:bg-black/50 text-slate-900 dark:text-slate-50 border-slate-200 dark:border-slate-800 text-base placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-fuchsia-400 dark:focus-visible:ring-cyan-400 focus-visible:border-transparent"
               />
             </label>
 
@@ -85,7 +95,7 @@ export default function HomePage() {
             </Button>
 
             {error ? (
-              <p className="animate-in fade-in slide-in-from-bottom-2 text-center text-sm font-medium text-rose-400">
+              <p className="animate-in fade-in slide-in-from-bottom-2 text-center text-sm font-medium text-rose-500 dark:text-rose-400">
                 {error}
               </p>
             ) : null}

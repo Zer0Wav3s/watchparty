@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { UrlInput } from "@/components/UrlInput";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ViewerCount } from "@/components/ViewerCount";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getPartyKitWebSocketUrl, parseServerMessage, sendPartyMessage } from "@/lib/partykit";
 import type { ServerMessage, VideoType } from "@/lib/types";
 import { isYouTubeUrl, normalizeUrl } from "@/lib/utils";
@@ -231,21 +232,28 @@ export default function RoomPage({ params }: RoomPageProps) {
   }
 
   return (
-    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-slate-950 p-4 sm:p-6 lg:p-8">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(6,182,212,0.05),transparent_50%)]" />
-      <Card className="relative z-10 flex w-full max-w-6xl flex-col bg-[#050505]">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-transparent p-4 sm:p-6 lg:p-8 relative overflow-hidden transition-colors duration-500">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_center,rgba(236,72,153,0.05),transparent_50%)] dark:bg-[radial-gradient(ellipse_at_top_center,rgba(6,182,212,0.05),transparent_50%)]" />
+      
+      {/* Background Blobs for Landing */}
+      <div className="party-blob party-blob-one opacity-30 dark:opacity-10" />
+      <div className="party-blob party-blob-two opacity-30 dark:opacity-10" />
+      <div className="party-blob party-blob-three opacity-30 dark:opacity-10" />
+
+      <Card className="relative z-10 flex w-full max-w-6xl flex-col bg-white/90 dark:bg-[#050505] shadow-2xl border-white/20 dark:border-white/10 backdrop-blur-xl">
         {/* Header */}
-        <div className="flex flex-col gap-4 border-b border-white/5 p-6 md:flex-row md:items-center md:justify-between md:px-8">
+        <div className="flex flex-col gap-4 border-b border-fuchsia-500/10 dark:border-white/5 p-6 md:flex-row md:items-center md:justify-between md:px-8">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
-              <p className="text-xs font-bold tracking-[0.15em] text-cyan-500/70 uppercase">
+              <p className="text-xs font-bold tracking-[0.15em] text-fuchsia-600 dark:text-cyan-500/70 uppercase">
                 Session
               </p>
-              <h1 className="font-mono text-xl font-bold tracking-tight text-white/90 sm:text-2xl">
+              <h1 className="font-mono text-xl font-bold tracking-tight text-slate-900 dark:text-white/90 sm:text-2xl">
                 {roomId}
               </h1>
             </div>
             {isHost && <Badge variant="amber" className="ml-2">Admin</Badge>}
+            <ThemeToggle />
           </div>
           <ViewerCount count={viewerCount} />
         </div>
@@ -253,7 +261,7 @@ export default function RoomPage({ params }: RoomPageProps) {
         {/* Body */}
         <CardContent className="relative flex-1 p-4 md:p-8">
           {needsPin && (
-            <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-md" />
+            <div className="absolute inset-0 z-40 bg-white/60 dark:bg-black/60 backdrop-blur-md" />
           )}
           {needsPin && (
             <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} />
@@ -269,16 +277,16 @@ export default function RoomPage({ params }: RoomPageProps) {
             )}
 
             {extracting && (
-              <div className="flex items-center gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-6 py-4">
+              <div className="flex items-center gap-3 rounded-2xl border border-fuchsia-500/20 dark:border-cyan-500/20 bg-fuchsia-500/10 dark:bg-cyan-500/10 px-6 py-4">
                 <span className="relative flex h-3 w-3">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75"></span>
-                  <span className="relative inline-flex h-3 w-3 rounded-full bg-cyan-500"></span>
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-fuchsia-400 dark:bg-cyan-400 opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-fuchsia-500 dark:bg-cyan-500"></span>
                 </span>
-                <p className="text-sm font-bold tracking-wide text-cyan-400">Negotiating stream source...</p>
+                <p className="text-sm font-bold tracking-wide text-fuchsia-600 dark:text-cyan-400">Negotiating stream source...</p>
               </div>
             )}
 
-            <div className="group relative aspect-video w-full overflow-hidden rounded-[32px] border border-white/5 bg-black shadow-2xl ring-1 ring-white/10">
+            <div className="group relative aspect-video w-full overflow-hidden rounded-[32px] border border-black/5 dark:border-white/5 bg-black shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
               <VideoPlayer
                 url={videoUrl}
                 type={videoType}
