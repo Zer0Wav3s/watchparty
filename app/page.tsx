@@ -83,7 +83,7 @@ export default function HomePage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="relative flex min-h-dvh flex-col items-center justify-center px-6 py-16 md:py-24"
+      className="relative flex min-h-dvh flex-col items-center px-6 pt-24 pb-0 md:pt-32"
     >
       {/* Theme toggle — fixed top-right */}
       <div className="fixed top-6 right-6 z-50">
