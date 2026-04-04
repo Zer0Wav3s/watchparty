@@ -5,6 +5,7 @@ import { Crown, LogOut, Loader2, PartyPopper } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
+import { MediaControls } from "@/components/MediaControls";
 import { ShareRoomLink } from "@/components/ShareRoomLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ToastContainer } from "@/components/Toast";
@@ -33,6 +34,8 @@ export default function RoomPage({ params }: RoomPageProps) {
   const router = useRouter();
 
   const socketRef = useRef<WebSocket | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoContainerRef = useRef<HTMLDivElement | null>(null);
   const positionRef = useRef(0);
   const ignoreNextPlayRef = useRef(false);
   const ignoreNextPauseRef = useRef(false);
@@ -311,6 +314,25 @@ export default function RoomPage({ params }: RoomPageProps) {
     }
   }
 
+  function handleLocalPlay() {
+    const position = videoRef.current?.currentTime ?? positionRef.current;
+    handlePlay(position);
+  }
+
+  function handleLocalPause() {
+    const position = videoRef.current?.currentTime ?? positionRef.current;
+    handlePause(position);
+  }
+
+  function handleLocalSeek(time: number) {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = time;
+    }
+
+    handleSeek(time);
+  }
+
   return (
     <motion.main
       initial={{ opacity: 0 }}
@@ -406,27 +428,45 @@ export default function RoomPage({ params }: RoomPageProps) {
 
         {/* Video area */}
         <div className="w-full max-w-[960px]">
-          <div className="aspect-video w-full overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-            <VideoPlayer
-              url={videoUrl}
-              type={videoType}
-              isPlaying={isPlaying}
-              seekTo={seekTo}
-              seekThreshold={DRIFT_THRESHOLD_SECS}
-              onPlay={handlePlay}
-              onPause={handlePause}
-              onSeek={handleSeek}
-              onTimeUpdate={handleTimeUpdate}
-            />
-          </div>
-
           {/* URL input */}
-          <div className="mt-4">
+          <div className="mb-4">
             <UrlInput
               disabled={needsPin || isConnecting || extracting || roomEnded}
               isHost={isHost}
               onSubmit={handleVideoSubmit}
             />
+          </div>
+
+          <div ref={videoContainerRef} className="w-full">
+            <div
+              className={`aspect-video w-full overflow-hidden border border-[var(--border)] bg-[var(--surface)] ${
+                videoUrl && videoType && videoType !== "youtube" ? "rounded-t-xl rounded-b-none" : "rounded-xl"
+              }`}
+            >
+              <VideoPlayer
+                ref={videoRef}
+                url={videoUrl}
+                type={videoType}
+                isPlaying={isPlaying}
+                seekTo={seekTo}
+                seekThreshold={DRIFT_THRESHOLD_SECS}
+                onPlay={handlePlay}
+                onPause={handlePause}
+                onSeek={handleSeek}
+                onTimeUpdate={handleTimeUpdate}
+              />
+            </div>
+
+            {videoUrl && videoType && videoType !== "youtube" ? (
+              <MediaControls
+                videoRef={videoRef}
+                containerRef={videoContainerRef}
+                isPlaying={isPlaying}
+                onPlay={handleLocalPlay}
+                onPause={handleLocalPause}
+                onSeek={handleLocalSeek}
+              />
+            ) : null}
           </div>
 
           {/* Error display */}

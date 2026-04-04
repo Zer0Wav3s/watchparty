@@ -1,7 +1,7 @@
 "use client";
 
 import Hls from "hls.js";
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 interface HlsPlayerProps {
   src: string;
@@ -25,7 +25,7 @@ function proxyUrl(src: string): string {
   }
 }
 
-export function HlsPlayer({
+export const HlsPlayer = forwardRef<HTMLVideoElement, HlsPlayerProps>(function HlsPlayer({
   src,
   isPlaying,
   seekTo,
@@ -34,9 +34,11 @@ export function HlsPlayer({
   onPause,
   onSeek,
   onTimeUpdate,
-}: HlsPlayerProps) {
+}: HlsPlayerProps, forwardedRef) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const isApplyingSyncSeekRef = useRef(false);
+
+  useImperativeHandle(forwardedRef, () => videoRef.current!, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -97,7 +99,6 @@ export function HlsPlayer({
   return (
     <video
       ref={videoRef}
-      controls
       playsInline
       className="h-full w-full rounded-[24px] bg-black"
       onPlay={() => onPlay(videoRef.current?.currentTime ?? 0)}
@@ -113,4 +114,4 @@ export function HlsPlayer({
       onTimeUpdate={() => onTimeUpdate?.(videoRef.current?.currentTime ?? 0)}
     />
   );
-}
+});
