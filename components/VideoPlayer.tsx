@@ -47,10 +47,17 @@ export function VideoPlayer({
 
   if (!url || !type) {
     return (
-      <div className="flex h-full min-h-[260px] w-full items-center justify-center rounded-[24px] border border-white/10 bg-slate-900/80 text-center text-zinc-400">
-        <div className="space-y-2 px-6">
-          <p className="text-lg font-medium text-white">No video loaded</p>
-          <p className="text-sm text-zinc-400">The host can paste a YouTube, HLS, or MP4 URL to start the room.</p>
+      <div className="flex h-full min-h-[320px] w-full items-center justify-center bg-black/40 text-center backdrop-blur-sm sm:min-h-[400px]">
+        <div className="flex max-w-sm flex-col items-center gap-6 px-8 py-10 opacity-70 transition-opacity hover:opacity-100">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/5 ring-1 ring-white/10">
+            <svg className="h-8 w-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div className="space-y-3">
+            <p className="text-xl font-bold tracking-tight text-white/90">Awaiting signal</p>
+            <p className="text-base font-medium text-zinc-500">The channel admin must provide a source to begin the session.</p>
+          </div>
         </div>
       </div>
     );
@@ -58,7 +65,7 @@ export function VideoPlayer({
 
   if (type === "youtube") {
     return (
-      <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black">
+      <div className="h-full w-full bg-black">
         <ReactPlayer
           ref={playerRef}
           src={url}
@@ -84,7 +91,7 @@ export function VideoPlayer({
   }
 
   return (
-    <div className="overflow-hidden rounded-[24px] border border-white/10 bg-black">
+    <div className="h-full w-full bg-black">
       <HlsPlayer
         src={url}
         isPlaying={isPlaying}

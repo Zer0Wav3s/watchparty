@@ -31,7 +31,7 @@ function DialogContent({ className, children, showClose = false, ...props }: Rea
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-3xl border border-white/10 bg-slate-950 p-6 shadow-2xl shadow-black/50",
+          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 rounded-[32px] border border-white/5 bg-[#0a0a0c] p-8 shadow-2xl shadow-black/80 ring-1 ring-white/10 inset-ring inset-ring-white/5",
           className,
         )}
         {...props}
@@ -49,15 +49,15 @@ function DialogContent({ className, children, showClose = false, ...props }: Rea
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("flex flex-col gap-2", className)} {...props} />;
+  return <div className={cn("flex flex-col gap-3 text-center sm:text-left", className)} {...props} />;
 }
 
 function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title className={cn("text-xl font-semibold text-white", className)} {...props} />;
+  return <DialogPrimitive.Title className={cn("text-2xl font-bold tracking-tight text-white", className)} {...props} />;
 }
 
 function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn("text-sm text-zinc-300", className)} {...props} />;
+  return <DialogPrimitive.Description className={cn("text-base text-zinc-400", className)} {...props} />;
 }
 
 export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle };
