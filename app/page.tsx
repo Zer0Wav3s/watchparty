@@ -112,7 +112,7 @@ export default function HomePage() {
 
         <motion.div variants={itemVariants} className="space-y-4">
           <h1 className="text-5xl leading-[1.1] font-black text-slate-950 dark:text-white">
-            Watch together, <span className="bg-[var(--party-gradient)] bg-clip-text text-transparent">from anywhere.</span>
+            Watch together,<br /><span style={{ backgroundImage: 'var(--party-gradient)' }} className="bg-clip-text text-transparent">from anywhere.</span>
           </h1>
           <p className="mx-auto max-w-xl text-lg font-medium text-slate-600 dark:text-slate-400">
             Create a room, share the link, and press play. Everyone stays in sync.

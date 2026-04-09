@@ -1,296 +1,125 @@
-# WatchParty — Design Specification v1
+# WatchParty Design Specification
 
-> **Philosophy:** Clean over clever. Party through color, not clutter. Every element earns its place.
-> **Inspiration:** Linear + Vercel + Notion — clean SaaS with warm, colorful accents.
+## Overarching Philosophy
+- **Clean over clever.** Simple layouts, generous whitespace, clear visual hierarchy.
+- **Light and airy default.** White/off-white surfaces, soft colored accents.
+- **Party through color, not clutter.** Background gradients and colorful buttons bring the energy, while the layout remains structured and minimal. 
+- **Inspiration:** Linear, Vercel, Notion. Sharp utility layered with warm, playful interactions.
 
 ---
 
 ## 1. Color System
 
-### Light Mode (Default)
+### Light Mode Palette
+*   **Background:** `#FAFAFA` (neutral-50) layered with a soft radial pastel gradient.
+*   **Surface (Cards/Modals):** `#FFFFFF` (pure white) with a translucent backdrop blur.
+*   **Text Primary:** `#0F172A` (slate-950)
+*   **Text Secondary:** `#64748B` (slate-500)
+*   **Border:** `#E2E8F0` (slate-200)
+*   **Accent Primary (Button Base):** `#0F172A` (slate-950) for stark contrast, paired with gradient hovers.
+*   **Accent Secondary (Highlights):** `#8B5CF6` (violet-500)
+*   **Success:** `#10B981` (emerald-500)
+*   **Danger (End Room):** `#EF4444` (red-500)
+*   **Danger Surface:** `#FEF2F2` (red-50)
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--bg` | `#F8F9FC` | Page background |
-| `--bg-gradient-from` | `#EEF0FF` | Background gradient start (top) |
-| `--bg-gradient-to` | `#FDF2F8` | Background gradient end (bottom) |
-| `--surface` | `#FFFFFF` | Cards, modals, inputs |
-| `--surface-hover` | `#F9FAFB` | Card hover state |
-| `--text-primary` | `#111827` | Headlines, primary text |
-| `--text-secondary` | `#6B7280` | Subtext, descriptions |
-| `--text-muted` | `#9CA3AF` | Placeholders, disabled |
-| `--border` | `#E5E7EB` | Card borders, input borders |
-| `--border-focus` | `#A78BFA` | Focus rings |
-| `--accent-primary` | `#8B5CF6` | Primary buttons, links |
-| `--accent-primary-hover` | `#7C3AED` | Primary hover |
-| `--accent-secondary` | `#EC4899` | Secondary accent (pink) |
-| `--success` | `#10B981` | Success states |
-| `--danger` | `#EF4444` | Danger/destructive |
-| `--danger-hover` | `#DC2626` | Danger hover |
+### Dark Mode Palette (Cinematic/Theater Vibe)
+*   **Background:** `#020617` (slate-950)
+*   **Surface:** `#0F172A` (slate-900)
+*   **Text Primary:** `#F8FAFC` (slate-50)
+*   **Text Secondary:** `#94A3B8` (slate-400)
+*   **Border:** `#1E293B` (slate-800)
+*   **Accent Primary:** `#F8FAFC` (slate-50)
+*   **Danger Surface:** `#450A0A` (red-950/50)
 
-**Button Gradient:** `linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)`
-**Button Gradient Hover:** `linear-gradient(135deg, #7C3AED 0%, #DB2777 100%)`
-
-### Dark Mode
-
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--bg` | `#0F1117` | Page background |
-| `--bg-gradient-from` | `#0F1117` | No gradient in dark |
-| `--bg-gradient-to` | `#0F1117` | Solid dark |
-| `--surface` | `#1A1D2E` | Cards |
-| `--surface-hover` | `#242840` | Card hover |
-| `--text-primary` | `#F9FAFB` | Headlines |
-| `--text-secondary` | `#9CA3AF` | Subtext |
-| `--text-muted` | `#6B7280` | Placeholders |
-| `--border` | `#2D3148` | Borders |
-| `--border-focus` | `#A78BFA` | Focus rings (same) |
-| `--accent-primary` | `#A78BFA` | Slightly lighter purple |
-| `--accent-primary-hover` | `#8B5CF6` | Hover |
-| `--accent-secondary` | `#F472B6` | Pink accent |
-| `--success` | `#34D399` | Success |
-| `--danger` | `#F87171` | Danger |
-| `--danger-hover` | `#EF4444` | Danger hover |
+### Gradients
+*   **Light Background Gradient (globals.css body):** Soft pastels over `#FAFAFA`. `radial-gradient(circle at top right, rgba(244, 114, 182, 0.08), transparent 40%), radial-gradient(circle at bottom left, rgba(45, 212, 191, 0.08), transparent 40%)`.
+*   **Dark Background Gradient:** `radial-gradient(circle at top right, rgba(236, 72, 153, 0.1), transparent 40%), radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.1), transparent 40%)`.
+*   **Party Gradient (Text/Accents):** `linear-gradient(135deg, #EC4899 0%, #8B5CF6 50%, #14B8A6 100%)`.
 
 ---
 
 ## 2. Typography
 
-**Font:** `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`
-
-| Scale | Size | Weight | Line Height | Usage |
-|-------|------|--------|-------------|-------|
-| `4xl` | `2.25rem` (36px) | 800 (extrabold) | 1.2 | Landing headline |
-| `2xl` | `1.5rem` (24px) | 700 (bold) | 1.3 | Room page title |
-| `xl` | `1.25rem` (20px) | 600 (semibold) | 1.4 | Feature card titles |
-| `lg` | `1.125rem` (18px) | 400 (normal) | 1.5 | Landing subheadline |
-| `base` | `1rem` (16px) | 400 (normal) | 1.5 | Body text, inputs |
-| `sm` | `0.875rem` (14px) | 500 (medium) | 1.5 | Labels, badges, descriptions |
-| `xs` | `0.75rem` (12px) | 500 (medium) | 1.5 | Captions, footnotes |
-
----
-
-## 3. Spacing & Radii
-
-| Element | Border Radius |
-|---------|---------------|
-| Cards | `16px` |
-| Buttons | `12px` |
-| Inputs | `12px` |
-| Badges | `9999px` (pill) |
-| Video area | `12px` |
-
-| Spacing Token | Value | Usage |
-|---------------|-------|-------|
-| Page padding | `24px` (mobile), `48px` (desktop) | Outer page margins |
-| Card padding | `32px` | Internal card padding |
-| Section gap | `24px` | Between sections |
-| Element gap | `12px` | Between form elements |
-| Button height | `48px` | All primary buttons |
-| Input height | `48px` | All text inputs |
+*   **Font Family:** `var(--font-geist-sans)` (Inter/Geist) for UI; `var(--font-geist-mono)` for Room IDs.
+*   **Scale:**
+    *   **xs:** `0.75rem` (12px) | Line Height: `1rem`
+    *   **sm:** `0.875rem` (14px) | Line Height: `1.25rem`
+    *   **base:** `1rem` (16px) | Line Height: `1.5rem`
+    *   **lg:** `1.125rem` (18px) | Line Height: `1.75rem`
+    *   **xl:** `1.25rem` (20px) | Line Height: `1.75rem`
+    *   **2xl:** `1.5rem` (24px) | Line Height: `2rem`
+    *   **3xl:** `1.875rem` (30px) | Line Height: `2.25rem`
+    *   **4xl:** `2.25rem` (36px) | Line Height: `2.5rem`
+    *   **5xl (Hero):** `3rem` (48px) | Line Height: `1.1`
+*   **Weights:**
+    *   Normal: `400`
+    *   Medium: `500` (Use for secondary text/labels)
+    *   Semibold: `600` (Use for standard buttons, card titles)
+    *   Bold: `700` (Use for section headers)
+    *   Black: `900` (Use ONLY for the Hero Headline in marketing)
 
 ---
 
-## 4. Component Specifications
+## 3. Spacing & Layout
 
-### 4A. Landing Page (`app/page.tsx`)
+### Global Radii
+*   **Cards:** `16px` (rounded-2xl)
+*   **Buttons/Inputs:** `8px` (rounded-lg) for standard, `9999px` (rounded-full) for primary CTAs and Badges.
+*   **Video Player:** `16px` (rounded-2xl)
 
-**Layout:** Single column, centered. `max-w-lg` (512px). Vertically centered (`min-h-dvh`, `items-center`, `justify-center`).
+### Landing Page Layout
+*   **Structure:** Single column, vertically centered. `max-w-3xl` mx-auto.
+*   **Padding:** `px-6 py-16` on mobile, `px-8 py-24` on desktop.
+*   **Alignment:** Text centered. Form centered.
+*   *(Remove the two-column layout and the cluttered orbiting icons panel).*
 
-**Background:**
-- Light: `linear-gradient(180deg, #EEF0FF 0%, #FDF2F8 100%)`
-- Dark: solid `#0F1117`
-
-**Card:**
-- Background: `--surface` (white / dark surface)
-- Border: `1px solid --border`
-- Shadow: `0 1px 3px rgba(0,0,0,0.05)` (light), `none` (dark)
-- Border-radius: `16px`
-- Padding: `32px`
-
-**Headline:**
-- Text: `"Watch together, from anywhere."`
-- Size: `4xl` (2.25rem), weight 800
-- Color: `--text-primary`
-- Centered
-
-**Subheadline:**
-- Text: `"Create a room, share the link, press play. Everyone stays in sync."`
-- Size: `lg` (1.125rem), weight 400
-- Color: `--text-secondary`
-- Centered, `max-w-sm`, `mt-2`
-
-**PIN Input:**
-- Height: `48px`
-- Background: `--surface`
-- Border: `1px solid --border`
-- Border-radius: `12px`
-- Placeholder: `"Room PIN (optional)"` in `--text-muted`
-- Focus: `ring-2 ring-[--border-focus]`
-- Icon: `LockKeyhole` from Lucide, 16px, `--text-muted`, positioned left with `pl-10`
-
-**Create Room Button:**
-- Height: `48px`
-- Full width (`w-full`)
-- Background: button gradient
-- Text: `"Create Room"`, white, weight 700, `base` size
-- Border-radius: `12px`
-- Hover: gradient shifts to hover variant + `scale(1.02)` + `box-shadow: 0 4px 16px rgba(139,92,246,0.3)`
-- Active: `scale(0.98)`
-- Icon: `Play` from Lucide, 18px, white, left of text
-
-**Feature Section (below card):**
-- Layout: `flex gap-8 mt-8`, centered
-- 3 features, each: icon (24px, `--accent-primary`) + label (`sm`, `--text-secondary`)
-- Features:
-  1. `Zap` icon + "Instant sync"
-  2. `Shield` icon + "PIN protection"
-  3. `MonitorPlay` icon + "YouTube & HLS"
-- No cards around features. Just icon + text, minimal.
-
-**Theme Toggle:**
-- Position: absolute top-right of page, `top-6 right-6`
-- Button: `40px × 40px`, ghost style (transparent bg)
-- Icon: `Sun` (in light mode) / `Moon` (in dark mode), 20px
-- Hover: `--surface-hover` background, `border-radius: 9999px`
-- Click: icon rotates 180° over 300ms
-
-**Footer:**
-- Text: `"WatchParty"` in `xs`, `--text-muted`, centered, `mt-8`
-
-### 4B. Room Page (`app/room/[id]/page.tsx`)
-
-**Layout:** Full width. No sidebar. Stacked vertically.
-
-**Header Bar:**
-- Height: `56px`
-- Background: `--surface`
-- Border-bottom: `1px solid --border`
-- Padding: `0 24px`
-- Content (flex, space-between):
-  - Left: Room ID badge (pill, `--bg`, `--text-secondary`, `sm` font) + Viewer count (`Users` icon 16px + count, `sm`, `--text-secondary`)
-  - Center: (empty)
-  - Right: Host badge (if host) + End Room button (if host) + Theme toggle
-
-**Host Badge:**
-- `Crown` icon 14px + "Host" text
-- Background: `#FEF3C7` (amber-100) | Dark: `#78350F` with `#FDE68A` text
-- Text: `#92400E` (amber-800), `xs`, weight 600
-- Border-radius: pill
-- Padding: `4px 10px`
-
-**End Room Button (host only):**
-- Text: `"End Room"`
-- Style: danger variant — `--danger` bg, white text, `sm` font, weight 600
-- Height: `32px`, border-radius: `8px`, padding: `0 12px`
-- Hover: `--danger-hover`
-- Icon: `LogOut` 14px, white, left of text
-
-**Video Area:**
-- Max-width: `960px`, centered
-- Aspect ratio: `16/9`
-- Background (empty): `--surface`
-- Border: `1px solid --border`
-- Border-radius: `12px`
-- Overflow: hidden
-
-**Empty State (no video loaded):**
-- Centered in video area
-- `CirclePlay` icon, 64px, `--text-muted`
-- Text: `"Paste a link below to start watching"`, `lg`, `--text-secondary`
-- Subtext: `"YouTube, HLS streams, and direct video links supported"`, `sm`, `--text-muted`
-
-**URL Input Bar:**
-- Below video area, `mt-4`
-- Same max-width as video (960px), centered
-- Flex row: Input (flex-1) + Button
-- Input: same style as landing page input, icon `Link2` left
-- Placeholder (host): `"Paste a video link..."` 
-- Placeholder (non-host): `"Waiting for host to choose a video"`
-- Button: `"Load"`, primary gradient, `48px` height, `80px` width, border-radius `12px`
-- Non-host: input + button disabled, `opacity-50`
-
-**Viewer Count:**
-- `Users` icon 16px + count number
-- `sm` font, `--text-secondary`
-
-**Toast Notifications:**
-- Position: top-center, `top-4`
-- Background: `--surface`, border: `1px solid --border`
-- Shadow: `0 4px 12px rgba(0,0,0,0.1)`
-- Border-radius: `12px`
-- Padding: `12px 16px`
-- Text: `sm`, `--text-primary`
-- Animation: slide down from -20px, fade in, 300ms ease-out
-- Auto-dismiss: 3 seconds, fade out 200ms
-
-**Room Ended Overlay:**
-- Full-screen overlay, `bg-black/50` backdrop
-- Centered card: `--surface`, `16px` radius, `32px` padding
-- `PartyPopper` icon 48px, `--accent-primary`
-- Text: `"This room has ended"`, `xl`, weight 600
-- Subtext: `"Redirecting to home..."`, `sm`, `--text-secondary`
-- Redirect after 3 seconds
+### Room Page Layout
+*   **Structure:** Video-first hierarchy. Top fixed header, center video, bottom controls.
+*   **Header:** `h-16`, flex row, justified between.
+*   **Video Container:** `aspect-video`, `w-full max-w-5xl mx-auto`, with subtle shadow `shadow-lg`.
+*   **URL Input:** Placed directly beneath the video container, `max-w-2xl mx-auto`.
 
 ---
 
-## 5. Animations (framer-motion)
+## 4. Component Specs
 
-| Element | Animation | Duration | Easing |
-|---------|-----------|----------|--------|
-| Card entrance | `opacity: 0→1, y: 16→0` | `500ms` | `[0.16, 1, 0.3, 1]` (ease-out) |
-| Button hover | `scale: 1.02` | `150ms` | `ease-out` |
-| Button active | `scale: 0.98` | `100ms` | `ease-out` |
-| Theme toggle icon | `rotate: 0→180` | `300ms` | `spring(stiffness:200)` |
-| Toast enter | `opacity: 0→1, y: -20→0` | `300ms` | `ease-out` |
-| Toast exit | `opacity: 1→0` | `200ms` | `ease-in` |
-| Page transition | `opacity: 0→1` | `300ms` | `ease-out` |
+### Landing Page (`app/page.tsx`)
+*   **Hero Headline:** 5xl, text-slate-950 (dark: text-white), Black weight. "Watch together, from anywhere." The words "from anywhere" use bg-clip-text with the Party Gradient.
+*   **Subheadline:** lg, text-slate-600, Medium weight, max-w-xl mx-auto.
+*   **Form:** Stacked vertically, centered.
+*   **PIN Input:** Height `56px` (h-14), `rounded-full`, border `slate-200`, text-center placeholder.
+*   **Create Room Button:** ONE CTA. Height `56px` (h-14), `rounded-full`, px-8. Background: `#0F172A`. Text color: `#FFFFFF`. Font: Semibold, Base size. Hover: Add a subtle translateY(-1px) and a party-colored drop shadow `shadow-[0_4px_14px_0_rgba(139,92,246,0.39)]`.
+*   **Feature List:** A simple 3-column flex/grid below the fold. Icons are `w-5 h-5` text-slate-600. Title is `sm` Semibold. Description is `sm` text-slate-500. NO cards, just floating text.
 
-**NO confetti particles. NO orbiting icons. NO floating elements.** Animations are subtle and functional.
+### Room Page (`app/room/[id]/page.tsx`)
+*   **Header Bar:** `bg-white/80` (backdrop-blur-md). Includes: Room ID (`font-mono`, `text-sm`, `font-semibold`), Theme Toggle (right), Viewer Count, and End Room button (if host).
+*   **Host Badge:** `bg-violet-100` (dark: bg-violet-900/30), `text-violet-700` (dark: text-violet-300), `rounded-full`. Crown icon `w-3 h-3`.
+*   **Viewer Count:** `text-slate-600`, `text-sm`, `font-medium`. Users icon `w-4 h-4`.
+*   **Video Empty State:** When no video is present, the video area has `bg-slate-100` (dark: bg-slate-900). Centered massive Play icon (`text-slate-300`, `w-16 h-16`) and text "Waiting for the host to drop a link..." (`text-slate-500`, `text-sm`).
+*   **Bottom URL Bar (Host only):** `h-14` input, border `slate-200`. Button attached to right side or inside input.
 
----
-
-## 6. Dark Mode Behavior
-
-- Toggle in top-right corner on all pages
-- Theme stored in `localStorage` key: `watchparty-theme`
-- Values: `"light"` | `"dark"`
-- Default: `"light"`
-- Applied via `class="dark"` on `<html>` element
-- Tailwind dark mode: `darkMode: "class"`
-- Transition: `transition-colors duration-200` on `<body>` for smooth switch
-- NO flash on page load: script in `<head>` reads localStorage and sets class before paint
+### Shared UI Components
+*   **Button Variants:**
+    *   *Primary:* `bg-slate-950 text-white rounded-full`.
+    *   *Secondary:* `bg-white border border-slate-200 text-slate-900 rounded-full`.
+    *   *Danger:* `bg-red-500 text-white rounded-full`.
+*   **Toast Notification:** Slide in from top-center. `bg-slate-900 text-white rounded-full px-4 py-2 text-sm shadow-xl`. No borders.
 
 ---
 
-## 7. What to REMOVE from current codebase
-
-1. ❌ "WatchParty MVP" badge — delete entirely
-2. ❌ Orbiting icons / "LIVE ROOM ENERGY" visualization — delete entirely  
-3. ❌ Duplicate "Create Room" button — ONE button only
-4. ❌ Dark gray card backgrounds in light mode — use white
-5. ❌ Fuchsia-400 accent color — replace with the purple/pink from this spec
-6. ❌ `slate-950` background — replace with gradient (light) or `#0F1117` (dark)
-7. ❌ Any remaining "MVP" text anywhere
-8. ❌ `.tmp-pr-body.md` and `.tmp-pr-body.json` — delete these build artifacts
+## 5. Animations
+*   **Page Entrance:** Everything fades in `opacity: 0 -> 1` and slides up `y: 10 -> 0`. Duration: `0.4s`, easing: `easeOut`. Stagger children by `0.1s`.
+*   **Button Hover:** Scale to `1.02`. Transition: `duration 0.2s, ease-out`.
+*   **Theme Toggle:** Rotation `180deg` on swap, fade in icon.
+*   **Toast:** Slide down from `-20px` to `16px`. Auto-dismiss `2.5s`.
 
 ---
 
-## 8. Files to Create/Modify
-
-| File | Action |
-|------|--------|
-| `app/globals.css` | CSS custom properties for all tokens, dark mode overrides |
-| `app/layout.tsx` | Theme script in `<head>`, dark class logic |
-| `app/providers.tsx` | ThemeContext with localStorage sync |
-| `app/page.tsx` | Complete rewrite per spec |
-| `app/room/[id]/page.tsx` | Rewrite header, empty state, layout per spec |
-| `components/ThemeToggle.tsx` | Sun/Moon toggle per spec |
-| `components/UrlInput.tsx` | Match spec styling |
-| `components/VideoPlayer.tsx` | Ensure border-radius, dark mode |
-| `components/ViewerCount.tsx` | Icon + count per spec |
-| `components/PinGate.tsx` | Match input/button spec |
-| `components/Toast.tsx` | NEW — toast notification component |
-| `tailwind.config.ts` | Extend with custom colors if needed, `darkMode: "class"` |
-| `.tmp-pr-body.md` | DELETE |
-| `.tmp-pr-body.json` | DELETE |
+## 6. Dark Mode Spec
+*   **The Switch:** Toggling dark mode instantly swaps variables without layout jumps.
+*   **Component Shifts:**
+    *   White cards (`#FFFFFF`) become Slate-900 (`#0F172A`).
+    *   Slate-200 borders become Slate-800 (`#1E293B`).
+    *   Primary buttons invert: White background, Slate-950 text.
+    *   Empty state video backgrounds shift from `slate-100` to `slate-900`.
+*   **Philosophy:** Ensure contrast remains high. Dark mode should feel like a dimly lit theater—distraction-free, focusing all attention on the video player.
