@@ -22,10 +22,10 @@ export function ThemeToggle() {
       <AnimatePresence mode="wait" initial={false}>
         <motion.span
           key={isDark ? "moon" : "sun"}
-          initial={{ rotate: 0 }}
-          animate={{ rotate: 0 }}
-          exit={{ rotate: 180 }}
-          transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
+          initial={{ rotate: -180, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: 180, opacity: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
           className="flex items-center justify-center"
         >
           {isDark ? (

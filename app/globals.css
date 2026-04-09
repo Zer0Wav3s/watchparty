@@ -1,41 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #F8F9FC;
-  --bg-gradient-from: #EEF0FF;
-  --bg-gradient-to: #FDF2F8;
+  --bg: #FAFAFA;
   --surface: #FFFFFF;
-  --surface-hover: #F9FAFB;
-  --text-primary: #111827;
-  --text-secondary: #6B7280;
-  --text-muted: #9CA3AF;
-  --border: #E5E7EB;
-  --border-focus: #A78BFA;
-  --accent-primary: #8B5CF6;
-  --accent-primary-hover: #7C3AED;
-  --accent-secondary: #EC4899;
+  --surface-hover: #F8FAFC;
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --border: #E2E8F0;
+  --border-focus: #8B5CF6;
+  --accent-primary: #0F172A;
+  --accent-primary-hover: #020617;
+  --accent-secondary: #8B5CF6;
+  --party-gradient: linear-gradient(135deg, #EC4899 0%, #8B5CF6 50%, #14B8A6 100%);
+  --bg-gradient: radial-gradient(circle at top right, rgba(244, 114, 182, 0.08), transparent 40%), radial-gradient(circle at bottom left, rgba(45, 212, 191, 0.08), transparent 40%);
   --success: #10B981;
   --danger: #EF4444;
   --danger-hover: #DC2626;
+  --danger-surface: #FEF2F2;
 }
 
 .dark {
-  --bg: #0F1117;
-  --bg-gradient-from: #0F1117;
-  --bg-gradient-to: #0F1117;
-  --surface: #1A1D2E;
-  --surface-hover: #242840;
-  --text-primary: #F9FAFB;
-  --text-secondary: #9CA3AF;
-  --text-muted: #6B7280;
-  --border: #2D3148;
-  --border-focus: #A78BFA;
-  --accent-primary: #A78BFA;
-  --accent-primary-hover: #8B5CF6;
-  --accent-secondary: #F472B6;
-  --success: #34D399;
-  --danger: #F87171;
+  --bg: #020617;
+  --surface: #0F172A;
+  --surface-hover: #111C31;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border: #1E293B;
+  --border-focus: #8B5CF6;
+  --accent-primary: #F8FAFC;
+  --accent-primary-hover: #E2E8F0;
+  --accent-secondary: #8B5CF6;
+  --bg-gradient: radial-gradient(circle at top right, rgba(236, 72, 153, 0.1), transparent 40%), radial-gradient(circle at bottom left, rgba(20, 184, 166, 0.1), transparent 40%);
+  --success: #10B981;
+  --danger: #EF4444;
   --danger-hover: #EF4444;
+  --danger-surface: rgba(69, 10, 10, 0.5);
 }
 
 @theme inline {
@@ -60,15 +61,12 @@ html.dark {
 body {
   min-height: 100%;
   margin: 0;
-  background: linear-gradient(180deg, var(--bg-gradient-from) 0%, var(--bg-gradient-to) 100%);
+  background-color: var(--bg);
+  background-image: var(--bg-gradient);
   color: var(--text-primary);
   font-family: var(--font-inter), Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   transition-property: background-color, border-color, color, fill, stroke, background;
   transition-duration: 200ms;
-}
-
-html.dark body {
-  background: var(--bg);
 }
 
 button,

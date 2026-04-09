@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LockKeyhole, MonitorPlay, Play, Shield, Zap } from "lucide-react";
+import { LockKeyhole, MonitorPlay, Shield, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -12,26 +12,43 @@ import { Button } from "@/components/ui/button";
 import { fireConfetti } from "@/lib/confetti";
 import { Input } from "@/components/ui/input";
 
-const cardEase = [0.16, 1, 0.3, 1] as const;
+const containerVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+      staggerChildren: 0.1,
+    },
+  },
+} as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+} as const;
 
 const features = [
   {
     icon: Zap,
     title: "Instant Sync",
-    description:
-      "Play, pause, and seek — everyone stays perfectly in sync, no matter where they are.",
+    description: "Play, pause, and seek together without drift.",
   },
   {
     icon: Shield,
     title: "PIN Protection",
-    description:
-      "Lock your room with an optional PIN so only invited friends can join the party.",
+    description: "Keep the room private with an optional join code.",
   },
   {
     icon: MonitorPlay,
     title: "YouTube & HLS",
-    description:
-      "Paste any YouTube link or HLS stream and start watching together instantly.",
+    description: "Drop in a supported link and start the party fast.",
   },
 ] as const;
 
@@ -64,8 +81,7 @@ export default function HomePage() {
       }
 
       fireConfetti();
-      // Small delay so confetti is visible before navigation
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
       router.push(`/room/${data.roomId}`);
     } catch (createError) {
       setError(
@@ -80,111 +96,78 @@ export default function HomePage() {
 
   return (
     <motion.main
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="relative flex min-h-dvh flex-col items-center px-6 pt-24 pb-0 md:pt-32"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="relative flex min-h-dvh flex-col px-6 py-16 md:px-8 md:py-24"
     >
-      {/* Theme toggle — fixed top-right */}
       <div className="fixed top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
-      {/* Hero section */}
-      <div className="flex w-full flex-col items-center">
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: cardEase }}
-          className="mb-6"
-        >
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center text-center">
+        <motion.div variants={itemVariants} className="mb-8">
           <WatchPartyLogo size={64} />
         </motion.div>
 
-        {/* Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.05, ease: cardEase }}
-          className="text-center text-4xl font-extrabold text-[var(--text-primary)]"
-        >
-          Watch Together, From Anywhere
-        </motion.h1>
+        <motion.div variants={itemVariants} className="space-y-4">
+          <h1 className="text-5xl leading-[1.1] font-black text-slate-950 dark:text-white">
+            Watch together, <span className="bg-[var(--party-gradient)] bg-clip-text text-transparent">from anywhere.</span>
+          </h1>
+          <p className="mx-auto max-w-xl text-lg font-medium text-slate-600 dark:text-slate-400">
+            Create a room, share the link, and press play. Everyone stays in sync.
+          </p>
+        </motion.div>
 
-        {/* Subheadline */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: cardEase }}
-          className="mx-auto mt-4 max-w-md text-center text-lg font-normal text-[var(--text-secondary)]"
-        >
-          Create a room, share the link, press play. Everyone stays in sync.
-        </motion.p>
-
-        {/* PIN Input & Create Room */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.15, ease: cardEase }}
-          className="mx-auto mt-10 w-full max-w-sm"
-        >
-          <form onSubmit={handleCreateRoom}>
+        <motion.div variants={itemVariants} className="mt-10 w-full max-w-sm">
+          <form onSubmit={handleCreateRoom} className="space-y-4">
             <div className="relative">
-              <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+              <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
               <Input
                 value={pin}
                 onChange={(event) => setPin(event.target.value)}
                 maxLength={12}
                 placeholder="Room PIN (optional)"
-                className="h-12 rounded-xl pl-10"
+                className="h-14 rounded-full border-slate-200 pl-11 text-center dark:border-slate-800"
               />
             </div>
 
             <Button
               type="submit"
               disabled={isLoading}
-              className="mt-4 h-12 w-full rounded-xl text-base font-semibold"
+              className="h-14 w-full px-8 text-base"
             >
-              <Play className="h-[18px] w-[18px]" />
               {isLoading ? "Creating..." : "Create Room"}
             </Button>
 
             {error ? (
-              <p className="mt-4 rounded-xl border border-[var(--danger)] bg-[var(--danger)]/10 px-4 py-3 text-center text-sm font-medium text-[var(--danger)]">
+              <p className="rounded-2xl border border-red-200 bg-[var(--danger-surface)] px-4 py-3 text-center text-sm font-medium text-red-500 dark:border-red-950/50">
                 {error}
               </p>
             ) : null}
           </form>
         </motion.div>
 
-        {/* Feature Cards */}
-        <div className="mx-auto mt-24 grid w-full max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
-          {features.map(({ icon: Icon, title, description }, index) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.5,
-                delay: 0.2 + index * 0.08,
-                ease: cardEase,
-              }}
-              className="cursor-pointer rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 transition-all duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-lg"
-            >
-              <Icon className="h-8 w-8 text-[var(--accent-primary)]" />
-              <h3 className="mt-4 mb-2 text-lg font-semibold text-[var(--text-primary)]">
-                {title}
-              </h3>
-              <p className="text-base font-normal leading-relaxed text-[var(--text-secondary)]">
-                {description}
-              </p>
-            </motion.div>
+        <motion.div
+          variants={itemVariants}
+          className="mt-20 grid w-full grid-cols-1 gap-8 text-left md:grid-cols-3"
+        >
+          {features.map(({ icon: Icon, title, description }) => (
+            <div key={title} className="space-y-3">
+              <Icon className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+                  {title}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {description}
+                </p>
+              </div>
+            </div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
-      <div className="mt-8 sm:mt-0" />
       <Footer />
     </motion.main>
   );

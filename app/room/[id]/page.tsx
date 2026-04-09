@@ -1,12 +1,13 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Crown, LogOut, Loader2, PartyPopper } from "lucide-react";
+import { Crown, Loader2, LogOut, PartyPopper } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 
 import { Footer } from "@/components/Footer";
 import { MediaControls } from "@/components/MediaControls";
+import { PinGate } from "@/components/PinGate";
 import { ShareRoomLink } from "@/components/ShareRoomLink";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ToastContainer } from "@/components/Toast";
@@ -15,15 +16,40 @@ import { UrlInput } from "@/components/UrlInput";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ViewerCount } from "@/components/ViewerCount";
 import { WatchPartyLogo } from "@/components/WatchPartyLogo";
-import { PinGate } from "@/components/PinGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getPartyKitWebSocketUrl, parseServerMessage, sendPartyMessage } from "@/lib/partykit";
+import {
+  getPartyKitWebSocketUrl,
+  parseServerMessage,
+  sendPartyMessage,
+} from "@/lib/partykit";
 import type { ServerMessage, VideoType } from "@/lib/types";
 import { isYouTubeUrl, normalizeUrl } from "@/lib/utils";
 
 const HEARTBEAT_INTERVAL_MS = 5_000;
 const DRIFT_THRESHOLD_SECS = 2;
+
+const containerVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+      staggerChildren: 0.1,
+    },
+  },
+} as const;
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+} as const;
 
 interface RoomPageProps {
   params: Promise<{ id: string }>;
@@ -68,7 +94,7 @@ export default function RoomPage({ params }: RoomPageProps) {
 
     const timeout = window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
-    }, 3000);
+    }, 2500);
 
     toastTimeoutsRef.current.push(timeout);
   }, []);
@@ -170,7 +196,9 @@ export default function RoomPage({ params }: RoomPageProps) {
   );
 
   useEffect(() => {
-    const socket = new WebSocket(getPartyKitWebSocketUrl(roomId, { hostToken, pin: storedPin }));
+    const socket = new WebSocket(
+      getPartyKitWebSocketUrl(roomId, { hostToken, pin: storedPin }),
+    );
     socketRef.current = socket;
 
     socket.addEventListener("open", () => {
@@ -197,7 +225,10 @@ export default function RoomPage({ params }: RoomPageProps) {
     if (!isHost || !isPlaying || roomEnded) return;
 
     const timer = window.setInterval(() => {
-      sendPartyMessage(socketRef.current, { type: "heartbeat", position: positionRef.current });
+      sendPartyMessage(socketRef.current, {
+        type: "heartbeat",
+        position: positionRef.current,
+      });
     }, HEARTBEAT_INTERVAL_MS);
 
     return () => window.clearInterval(timer);
@@ -228,12 +259,20 @@ export default function RoomPage({ params }: RoomPageProps) {
 
     if (viewerCount > previousCount) {
       const joinedCount = viewerCount - previousCount;
-      addToast(joinedCount === 1 ? "Someone joined the watch party." : `${joinedCount} people joined the watch party.`);
+      addToast(
+        joinedCount === 1
+          ? "Someone joined the watch party."
+          : `${joinedCount} people joined the watch party.`,
+      );
     }
 
     if (viewerCount < previousCount) {
       const leftCount = previousCount - viewerCount;
-      addToast(leftCount === 1 ? "Someone left the room." : `${leftCount} people left the room.`);
+      addToast(
+        leftCount === 1
+          ? "Someone left the room."
+          : `${leftCount} people left the room.`,
+      );
     }
 
     previousViewerCountRef.current = viewerCount;
@@ -249,7 +288,11 @@ export default function RoomPage({ params }: RoomPageProps) {
     const url = normalizeUrl(rawUrl);
 
     if (isYouTubeUrl(url)) {
-      sendPartyMessage(socketRef.current, { type: "set-video", url, videoType: "youtube" });
+      sendPartyMessage(socketRef.current, {
+        type: "set-video",
+        url,
+        videoType: "youtube",
+      });
       return;
     }
 
@@ -261,14 +304,22 @@ export default function RoomPage({ params }: RoomPageProps) {
         body: JSON.stringify({ url }),
       });
 
-      const data = (await res.json()) as { src?: string; type?: "hls" | "mp4"; error?: string };
+      const data = (await res.json()) as {
+        src?: string;
+        type?: "hls" | "mp4";
+        error?: string;
+      };
 
       if (!res.ok || !data.src || !data.type) {
         setError(data.error || "Could not extract video from that URL.");
         return;
       }
 
-      sendPartyMessage(socketRef.current, { type: "set-video", url: data.src, videoType: data.type });
+      sendPartyMessage(socketRef.current, {
+        type: "set-video",
+        url: data.src,
+        videoType: data.type,
+      });
     } catch {
       setError("Failed to extract video. Try a different URL.");
     } finally {
@@ -336,30 +387,34 @@ export default function RoomPage({ params }: RoomPageProps) {
 
   return (
     <motion.main
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
       className="flex min-h-dvh flex-col"
     >
-      {/* Toasts */}
       <ToastContainer toasts={toasts} />
 
-      {/* Header bar */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] px-3 sm:px-6">
-        {/* Left — Logo + Room ID */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+      <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-[var(--border)] bg-white/80 px-4 backdrop-blur-md dark:bg-slate-900/80 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
           <WatchPartyLogo size={32} linkTo="/" />
-          <Badge variant="secondary" className="hidden text-sm sm:inline-flex">
-            {roomId}
-          </Badge>
-          <ViewerCount count={viewerCount} />
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-sm font-semibold text-slate-950 dark:text-slate-50">
+              {roomId}
+            </span>
+            <div className="hidden sm:block">
+              <ViewerCount count={viewerCount} />
+            </div>
+          </div>
         </div>
 
-        {/* Right — Host badge + End Room + Theme Toggle */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="sm:hidden">
+            <ViewerCount count={viewerCount} />
+          </div>
+
           {isHost ? (
-            <Badge variant="amber" className="hidden gap-1.5 px-2.5 py-1 text-xs font-semibold sm:inline-flex">
-              <Crown className="h-3.5 w-3.5" />
+            <Badge variant="amber" className="hidden gap-1.5 px-2.5 py-1 sm:inline-flex">
+              <Crown className="h-3 w-3" />
               Host
             </Badge>
           ) : null}
@@ -371,14 +426,14 @@ export default function RoomPage({ params }: RoomPageProps) {
               size="sm"
               disabled={endingRoom || roomEnded}
               onClick={handleEndRoom}
-              className="h-8 gap-1.5 rounded-lg px-2 text-xs font-semibold sm:px-3 sm:text-sm"
+              className="gap-1.5 px-3"
             >
               {endingRoom ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
                 <LogOut className="h-3.5 w-3.5" />
               )}
-              End Room
+              <span className="hidden sm:inline">End Room</span>
             </Button>
           ) : null}
 
@@ -386,17 +441,22 @@ export default function RoomPage({ params }: RoomPageProps) {
         </div>
       </header>
 
-      {/* Shareable Room Link */}
-      <ShareRoomLink roomId={roomId} />
+      <motion.div variants={itemVariants}>
+        <ShareRoomLink roomId={roomId} />
+      </motion.div>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col items-center px-3 py-4 sm:px-6 sm:py-6 md:px-12">
-        {/* PIN gate overlay */}
+      <motion.div
+        variants={itemVariants}
+        className="flex flex-1 flex-col items-center px-4 py-6 sm:px-6 md:px-8"
+      >
         {needsPin ? (
-          <PinGate error={pinError} isLoading={isSubmittingPin} onSubmit={handlePinSubmit} />
+          <PinGate
+            error={pinError}
+            isLoading={isSubmittingPin}
+            onSubmit={handlePinSubmit}
+          />
         ) : null}
 
-        {/* Room ended overlay */}
         <AnimatePresence>
           {roomEnded ? (
             <motion.div
@@ -406,12 +466,12 @@ export default function RoomPage({ params }: RoomPageProps) {
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
             >
               <motion.div
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center"
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center shadow-lg"
               >
-                <PartyPopper className="mx-auto h-12 w-12 text-[var(--accent-primary)]" />
+                <PartyPopper className="mx-auto h-12 w-12 text-[var(--accent-secondary)]" />
                 <h2 className="mt-4 text-xl font-semibold text-[var(--text-primary)]">
                   This room has ended
                 </h2>
@@ -423,21 +483,13 @@ export default function RoomPage({ params }: RoomPageProps) {
           ) : null}
         </AnimatePresence>
 
-        {/* Video area */}
-        <div className="w-full max-w-[960px]">
-          {/* URL input */}
-          <div className="mb-4">
-            <UrlInput
-              disabled={needsPin || isConnecting || extracting || roomEnded}
-              isHost={isHost}
-              onSubmit={handleVideoSubmit}
-            />
-          </div>
-
+        <div className="w-full max-w-5xl space-y-4">
           <div ref={videoContainerRef} className="w-full">
             <div
-              className={`relative aspect-video w-full overflow-hidden border border-[var(--border)] bg-[var(--surface)] ${
-                videoUrl && videoType && videoType !== "youtube" ? "rounded-t-xl rounded-b-none" : "rounded-xl"
+              className={`relative aspect-video w-full overflow-hidden rounded-2xl bg-white shadow-lg dark:bg-slate-900 ${
+                videoUrl && videoType && videoType !== "youtube"
+                  ? "rounded-b-none"
+                  : ""
               }`}
             >
               <VideoPlayer
@@ -452,12 +504,14 @@ export default function RoomPage({ params }: RoomPageProps) {
                 onSeek={handleSeek}
                 onTimeUpdate={handleTimeUpdate}
               />
-              {/* Click-to-pause overlay (non-YouTube only) */}
               {videoUrl && videoType && videoType !== "youtube" ? (
                 <button
                   type="button"
                   className="absolute inset-0 z-10 cursor-pointer bg-transparent"
-                  onClick={() => { if (isPlaying) handleLocalPause(); else handleLocalPlay(); }}
+                  onClick={() => {
+                    if (isPlaying) handleLocalPause();
+                    else handleLocalPlay();
+                  }}
                   aria-label={isPlaying ? "Pause video" : "Play video"}
                 />
               ) : null}
@@ -475,25 +529,31 @@ export default function RoomPage({ params }: RoomPageProps) {
             ) : null}
           </div>
 
-          {/* Error display */}
+          <div className="mx-auto w-full max-w-2xl">
+            <UrlInput
+              disabled={needsPin || isConnecting || extracting || roomEnded}
+              isHost={isHost}
+              onSubmit={handleVideoSubmit}
+            />
+          </div>
+
           {error ? (
-            <p className="mt-4 rounded-xl border border-[var(--danger)] bg-[var(--danger)]/10 px-4 py-3 text-sm font-medium text-[var(--danger)]">
+            <p className="rounded-2xl border border-red-200 bg-[var(--danger-surface)] px-4 py-3 text-sm font-medium text-red-500 dark:border-red-950/50">
               {error}
             </p>
           ) : null}
 
-          {/* Extracting indicator */}
           {extracting ? (
-            <div className="mt-4 flex items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
-              <Loader2 className="h-4 w-4 animate-spin text-[var(--accent-primary)]" />
+            <div className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+              <Loader2 className="h-4 w-4 animate-spin text-[var(--accent-secondary)]" />
               <p className="text-sm text-[var(--text-secondary)]">
                 Finding the best stream source...
               </p>
             </div>
           ) : null}
         </div>
-      </div>
-      <div className="mt-8 sm:mt-0" />
+      </motion.div>
+
       <Footer />
     </motion.main>
   );

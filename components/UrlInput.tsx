@@ -30,7 +30,7 @@ export function UrlInput({ disabled, isHost, onSubmit }: UrlInputProps) {
 
   return (
     <form
-      className={`flex w-full flex-row gap-3 ${isDisabled ? "opacity-50" : ""}`}
+      className={`flex w-full flex-col gap-3 sm:flex-row ${isDisabled ? "opacity-50" : ""}`}
       onSubmit={handleSubmit}
     >
       <div className="relative flex-1">
@@ -44,13 +44,13 @@ export function UrlInput({ disabled, isHost, onSubmit }: UrlInputProps) {
               : "Waiting for host to choose a video"
           }
           disabled={isDisabled}
-          className="h-12 pl-10"
+          className="h-14 rounded-full border-slate-200 pl-10 text-center sm:text-left dark:border-slate-800"
         />
       </div>
       <Button
         type="submit"
         disabled={isDisabled}
-        className="h-12 w-20 rounded-xl text-base font-bold"
+        className="h-14 px-6 text-base"
       >
         Load
       </Button>
